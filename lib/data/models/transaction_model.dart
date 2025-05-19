@@ -16,10 +16,14 @@ class TransactionModel {
   @HiveField(3)
   final DateTime date;
 
+  @HiveField(4) // Novo campo
+  final bool isIncome;
+
   TransactionModel({
     required this.id,
     required this.description,
     required this.amount,
     required this.date,
+    required this.isIncome,
   });
 }

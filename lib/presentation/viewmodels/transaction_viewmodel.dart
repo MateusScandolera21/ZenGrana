@@ -3,18 +3,21 @@ import 'package:hive/hive.dart';
 import '../../data/models/transaction_model.dart';
 
 class TransactionViewModel extends ChangeNotifier {
-  final Box<TransactionModel> box = Hive.box<TransactionModel>('transactions');
+  late Box<TransactionModel> _box;
 
-  List<TransactionModel> get transactions => box.values.toList();
+  TransactionViewModel() {
+    _box = Hive.box<TransactionModel>('transactions');
+  }
 
-  void addTransaction(TransactionModel transaction) {
-    box.add(transaction);
+  List<TransactionModel> get transactions => _box.values.toList();
+
+  void addTransaction(TransactionModel transaction) async {
+    await _box.add(transaction);
     notifyListeners();
   }
 
-  void deleteTransaction(int index) {
-    box.deleteAt(index);
+  void deleteTransaction(int index) async {
+    await _box.deleteAt(index);
     notifyListeners();
   }
-
 }
