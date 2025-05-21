@@ -20,4 +20,16 @@ class TransactionViewModel extends ChangeNotifier {
     await _box.deleteAt(index);
     notifyListeners();
   }
+
+  void editTransaction(TransactionModel edited) {
+    final key = _box.keys.cast<int>().firstWhere(
+      (k) => _box.get(k)?.id == edited.id,
+      orElse: () => -1,
+    );
+
+    if (key != -1) {
+      _box.put(key, edited);
+      notifyListeners();
+    }
+  }
 }

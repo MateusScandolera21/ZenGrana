@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'category_model.dart';
 
 part 'transaction_model.g.dart';
 
@@ -16,7 +17,10 @@ class TransactionModel {
   @HiveField(3)
   final DateTime date;
 
-  @HiveField(4) // Novo campo
+  @HiveField(4)
+  final CategoryModel category;
+
+  @HiveField(5) // Novo campo
   final bool isIncome;
 
   TransactionModel({
@@ -24,6 +28,7 @@ class TransactionModel {
     required this.description,
     required this.amount,
     required this.date,
+    required this.category,
     required this.isIncome,
   });
 }

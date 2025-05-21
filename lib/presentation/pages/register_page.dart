@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hive/hive.dart';
 import '../../data/models/transaction_model.dart';
 import '../viewmodels/transaction_viewmodel.dart';
+import '../../data/models/category_model.dart';
+import 'category_register_page.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  final TransactionModel? transaction;
+
+  const RegisterPage({Key? key, this.transaction}) : super(key: key);
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -15,63 +20,156 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String? _title;
   double? _amount;
-  bool _isIncome = true; // true = entrada, false = saída
+  bool _isIncome = true;
+
+  CategoryModel? _selectedCategory;
+  List<CategoryModel> _categories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+
+    final t = widget.transaction;
+    if (t != null) {
+      _title = t.description;
+      _amount = t.amount;
+      _isIncome = t.isIncome;
+      _selectedCategory = t.category;
+    }
+  }
+
+  void _loadCategories() {
+    final box = Hive.box<CategoryModel>('categories');
+    setState(() {
+      _categories = box.values.toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registrar Movimentação')),
+      appBar: AppBar(
+        title: Text(
+          widget.transaction == null
+              ? 'Nova Movimentação'
+              : 'Editar Movimentação',
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Título'),
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? 'Informe o título'
-                            : null,
-                onSaved: (value) => _title = value,
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Valor'),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Informe o valor';
-                  if (double.tryParse(value) == null) return 'Valor inválido';
-                  return null;
-                },
-                onSaved: (value) => _amount = double.tryParse(value!),
-              ),
-              SwitchListTile(
-                title: const Text('Entrada'),
-                value: _isIncome,
-                onChanged: (val) => setState(() => _isIncome = val),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    final newTransaction = TransactionModel(
-                      id: DateTime.now().millisecondsSinceEpoch,
-                      description: _title!,
-                      amount: _amount!,
-                      isIncome: _isIncome,
-                      date: DateTime.now(),
-                    );
-                    Provider.of<TransactionViewModel>(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextFormField(
+                  initialValue: _title,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator:
+                      (value) =>
+                          value == null || value.isEmpty
+                              ? 'Informe o título'
+                              : null,
+                  onSaved: (value) => _title = value,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  initialValue: _amount?.toString(),
+                  decoration: const InputDecoration(labelText: 'Valor'),
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  validator: (value) {
+                    if (value == null || value.isEmpty)
+                      return 'Informe o valor';
+                    if (double.tryParse(value) == null) return 'Valor inválido';
+                    return null;
+                  },
+                  onSaved: (value) => _amount = double.tryParse(value!),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<CategoryModel>(
+                  decoration: const InputDecoration(labelText: 'Categoria'),
+                  value: _selectedCategory,
+                  items:
+                      _categories
+                          .map(
+                            (cat) => DropdownMenuItem(
+                              value: cat,
+                              child: Text(cat.name),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                  },
+                  validator:
+                      (value) =>
+                          value == null ? 'Selecione uma categoria' : null,
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await Navigator.push(
                       context,
-                      listen: false,
-                    ).addTransaction(newTransaction);
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text('Salvar'),
-              ),
-            ],
+                      MaterialPageRoute(
+                        builder: (_) => const CategoryRegisterPage(),
+                      ),
+                    );
+                    _loadCategories();
+                  },
+                  child: const Text(
+                    'Não encontrou a categoria? Cadastre-a aqui',
+                  ),
+                ),
+                SwitchListTile(
+                  title: const Text('Entrada'),
+                  value: _isIncome,
+                  onChanged: (val) => setState(() => _isIncome = val),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+
+                      if (widget.transaction == null) {
+                        final newTransaction = TransactionModel(
+                          id: DateTime.now().millisecondsSinceEpoch,
+                          description: _title!,
+                          amount: _amount!,
+                          isIncome: _isIncome,
+                          category: _selectedCategory!,
+                          date: DateTime.now(),
+                        );
+
+                        Provider.of<TransactionViewModel>(
+                          context,
+                          listen: false,
+                        ).addTransaction(newTransaction);
+                      } else {
+                        final edited = TransactionModel(
+                          id: widget.transaction!.id,
+                          description: _title!,
+                          amount: _amount!,
+                          isIncome: _isIncome,
+                          category: _selectedCategory!,
+                          date: widget.transaction!.date,
+                        );
+
+                        Provider.of<TransactionViewModel>(
+                          context,
+                          listen: false,
+                        ).editTransaction(edited);
+                      }
+
+                      Navigator.pop(context); // Volta para a tela anterior
+                    }
+                  },
+                  child: const Text('Salvar'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
