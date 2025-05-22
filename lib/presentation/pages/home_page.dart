@@ -5,7 +5,9 @@ import '../../data/models/transaction_model.dart';
 import '../../data/models/category_model.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import '../pages/register_page.dart';
-// ... (imports e início iguais)
+// Importe as páginas de Metas e Orçamento que você vai criar
+// import '../pages/goals_page.dart'; // Exemplo
+// import '../pages/budget_page.dart'; // Exemplo
 
 class HomePage extends StatefulWidget {
   @override
@@ -52,6 +54,98 @@ class _HomePageState extends State<HomePage> {
               Tab(text: 'Todos'),
               Tab(text: 'Entradas'),
               Tab(text: 'Saídas'),
+            ],
+          ),
+        ),
+        // Adicione o Drawer aqui
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              // Cabeçalho do Drawer (opcional, mas recomendado)
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.account_balance_wallet,
+                        size: 30,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Menu Financeiro',
+                      style: TextStyle(color: Colors.white, fontSize: 24),
+                    ),
+                  ],
+                ),
+              ),
+              // Opção para Cadastrar Metas
+              ListTile(
+                leading: const Icon(Icons.track_changes),
+                title: const Text('Cadastrar Metas'),
+                onTap: () {
+                  // Fechar o drawer
+                  Navigator.pop(context);
+                  // Navegar para a página de Metas
+                  // Navigator.push(context, MaterialPageRoute(builder: (_) => GoalsPage())); // Exemplo
+                  // TODO: Implementar a navegação para a página de Metas
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Navegar para Cadastrar Metas'),
+                    ),
+                  );
+                },
+              ),
+              // Opção para Cadastrar Orçamento/Limite de Gasto
+              ListTile(
+                leading: const Icon(Icons.attach_money),
+                title: const Text('Cadastrar Orçamento'),
+                onTap: () {
+                  // Fechar o drawer
+                  Navigator.pop(context);
+                  // Navegar para a página de Orçamento
+                  // Navigator.push(context, MaterialPageRoute(builder: (_) => BudgetPage())); // Exemplo
+                  // TODO: Implementar a navegação para a página de Orçamento
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Navegar para Cadastrar Orçamento'),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.attach_money),
+                title: const Text('Movimentações'),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Navega para a tela de movimentações
+                  // Navigator.push(context, MaterialPageRoute(builder: (_) => MovimentPage()));
+                  // TODO: Implementar navegação para a página de Movimentações
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Navegar para movimentações')),
+                  );
+                },
+              ),
+              // Adicione um divisor para separar visualmente
+              const Divider(),
+              // Exemplo de outra opção (Home)
+              ListTile(
+                leading: const Icon(Icons.home),
+                title: const Text('Início'),
+                onTap: () {
+                  // Fechar o drawer
+                  Navigator.pop(context);
+                  // Se for a própria Home, não faz nada ou apenas fecha o drawer
+                },
+              ),
             ],
           ),
         ),
