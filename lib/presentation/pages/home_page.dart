@@ -1,3 +1,4 @@
+import 'package:controle_financeiro/presentation/pages/budget_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -6,7 +7,7 @@ import '../../data/models/category_model.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import '../pages/register_page.dart';
 // Importe as páginas de Metas e Orçamento que você vai criar
-// import '../pages/goals_page.dart'; // Exemplo
+import '../pages/goals_page.dart'; // Exemplo
 // import '../pages/budget_page.dart'; // Exemplo
 
 class HomePage extends StatefulWidget {
@@ -112,13 +113,11 @@ class _HomePageState extends State<HomePage> {
                   // Fechar o drawer
                   Navigator.pop(context);
                   // Navegar para a página de Orçamento
-                  // Navigator.push(context, MaterialPageRoute(builder: (_) => BudgetPage())); // Exemplo
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => BudgetPage()),
+                  ); // Exemplo
                   // TODO: Implementar a navegação para a página de Orçamento
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Navegar para Cadastrar Orçamento'),
-                    ),
-                  );
                 },
               ),
               ListTile(
@@ -127,11 +126,11 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   Navigator.pop(context);
                   // Navega para a tela de movimentações
-                  // Navigator.push(context, MaterialPageRoute(builder: (_) => MovimentPage()));
-                  // TODO: Implementar navegação para a página de Movimentações
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Navegar para movimentações')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => RegisterPage()),
                   );
+                  // TODO: Implementar navegação para a página de Movimentações
                 },
               ),
               // Adicione um divisor para separar visualmente
