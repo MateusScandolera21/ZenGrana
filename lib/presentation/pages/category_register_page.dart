@@ -40,6 +40,7 @@ class _CategoryRegisterPageState extends State<CategoryRegisterPage> {
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Nome da Categoria',
+                  border: OutlineInputBorder(),
                 ),
                 validator:
                     (value) =>
@@ -49,9 +50,12 @@ class _CategoryRegisterPageState extends State<CategoryRegisterPage> {
                 onSaved: (value) => _name = value,
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _saveCategory,
-                child: const Text('Salvar'),
+              SizedBox(
+                width: 300.0,
+                child: ElevatedButton(
+                  onPressed: _saveCategory,
+                  child: const Text('Salvar'),
+                ),
               ),
             ],
           ),

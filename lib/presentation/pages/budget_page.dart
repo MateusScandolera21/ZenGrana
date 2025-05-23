@@ -36,14 +36,19 @@ class _BudgetPageState extends State<BudgetPage> {
     // Acessar as categorias do TransactionViewModel ou de um CategoryViewModel
     // Aqui presumo que as categorias estão no TransactionViewModel,
     // se você tiver um CategoryViewModel, use-o.
-    final transactionViewModel =
-        Provider.of<TransactionViewModel>(context, listen: false);
+    final transactionViewModel = Provider.of<TransactionViewModel>(
+      context,
+      listen: false,
+    );
 
     // Pegar todas as categorias únicas das transações existentes
     // ou de uma lista de categorias pré-cadastradas no seu ViewModel
     setState(() {
       _availableCategories =
-          transactionViewModel.transactions.map((t) => t.category).toSet().toList();
+          transactionViewModel.transactions
+              .map((t) => t.category)
+              .toSet()
+              .toList();
     });
   }
 
@@ -77,90 +82,94 @@ class _BudgetPageState extends State<BudgetPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Novo Orçamento')),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Descrição do Orçamento',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) =>
-                     value == null || value.isEmpty
-                     ? 'Informe a descrição'
-                     : null,
-                  onSaved: (value) => _name = value,
+    return Scaffold(
+      appBar: AppBar(title: const Text('Novo Orçamento')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Descrição do Orçamento',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Valor do Orçamento (R\$)',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Informe o valor do orçamento';
-                    }
-                    final parsedValue = double.tryParse(value.replaceAll(',','.'));
-                    if (parsedValue == null || parsedValue <= 0) {
-                      return 'Valor inválido. Use números e seja maior que zero';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) => 
-                      _amount = double.tryParse(value!.replaceAll(',','.')),
+                validator:
+                    (value) =>
+                        value == null || value.isEmpty
+                            ? 'Informe a descrição'
+                            : null,
+                onSaved: (value) => _name = value,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Valor do Orçamento (R\$)',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<CategoryModel>(
-                  decoration: const InputDecoration(
-                    labelText: 'Categoria ( Opcional )',
-                    border: OutlineInputBorder(),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Informe o valor do orçamento';
+                  }
+                  final parsedValue = double.tryParse(
+                    value.replaceAll(',', '.'),
+                  );
+                  if (parsedValue == null || parsedValue <= 0) {
+                    return 'Valor inválido. Use números e seja maior que zero';
+                  }
+                  return null;
+                },
+                onSaved:
+                    (value) =>
+                        _amount = double.tryParse(value!.replaceAll(',', '.')),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<CategoryModel>(
+                decoration: const InputDecoration(
+                  labelText: 'Categoria ( Opcional )',
+                  border: OutlineInputBorder(),
+                ),
+                value: _selectedCategory,
+                hint: const Text('Selecione uma categoria'),
+                items: [
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('Todas as categorias'),
                   ),
-                  value: _selectedCategory,
-                  hint: const Text('Selecione uma categoria'),
-                  items: [
-                    const DropdownMenuItem(
-                      value: null,
-                      child: Text('Todas as categorias'),
-                    ),
-                    ..._availableCategories
+                  ..._availableCategories
                       .map(
-                        (cat) => DropdownMenuItem(
-                          value: cat,
-                          child: Text(cat.name),
-                        ),
+                        (cat) =>
+                            DropdownMenuItem(value: cat, child: Text(cat.name)),
                       )
                       .toList(),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: 300.0,
+                child: ElevatedButton.icon(
                   onPressed: _saveBudget,
                   icon: const Icon(Icons.save),
-                  label: const Text('Salvar orçamento'),
+                  label: const Text('Salvar Orçamento'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 }

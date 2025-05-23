@@ -9,6 +9,7 @@ import '../pages/register_page.dart';
 // Importe as páginas de Metas e Orçamento que você vai criar
 import '../pages/goals_page.dart'; // Exemplo
 // import '../pages/budget_page.dart'; // Exemplo
+import '../pages/category_register_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -91,7 +92,7 @@ class _HomePageState extends State<HomePage> {
               // Opção para Cadastrar Metas
               ListTile(
                 leading: const Icon(Icons.track_changes),
-                title: const Text('Cadastrar Metas'),
+                title: const Text('Cadastrar Metas ( Em construção )'),
                 onTap: () {
                   // Fechar o drawer
                   Navigator.pop(context);
@@ -104,10 +105,11 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 },
+                enabled: false,
               ),
               // Opção para Cadastrar Orçamento/Limite de Gasto
               ListTile(
-                leading: const Icon(Icons.attach_money),
+                leading: const Icon(Icons.pie_chart),
                 title: const Text('Cadastrar Orçamento'),
                 onTap: () {
                   // Fechar o drawer
@@ -117,11 +119,10 @@ class _HomePageState extends State<HomePage> {
                     context,
                     MaterialPageRoute(builder: (_) => BudgetPage()),
                   ); // Exemplo
-                  // TODO: Implementar a navegação para a página de Orçamento
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.attach_money),
+                leading: const Icon(Icons.receipt_long),
                 title: const Text('Movimentações'),
                 onTap: () {
                   Navigator.pop(context);
@@ -130,19 +131,17 @@ class _HomePageState extends State<HomePage> {
                     context,
                     MaterialPageRoute(builder: (_) => RegisterPage()),
                   );
-                  // TODO: Implementar navegação para a página de Movimentações
                 },
               ),
-              // Adicione um divisor para separar visualmente
-              const Divider(),
-              // Exemplo de outra opção (Home)
               ListTile(
-                leading: const Icon(Icons.home),
-                title: const Text('Início'),
+                leading: const Icon(Icons.category),
+                title: const Text('Categorias'),
                 onTap: () {
-                  // Fechar o drawer
                   Navigator.pop(context);
-                  // Se for a própria Home, não faz nada ou apenas fecha o drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => CategoryRegisterPage()),
+                  );
                 },
               ),
             ],
@@ -161,15 +160,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const RegisterPage()),
-            );
-          },
-          child: const Icon(Icons.add),
         ),
       ),
     );
@@ -253,7 +243,11 @@ class _HomePageState extends State<HomePage> {
         Expanded(
           child:
               transactions.isEmpty
-                  ? const Center(child: Text('Nenhuma movimentação'))
+                  ? const Center(
+                    child: Text(
+                      'Para cadastrar uma movimentação, utilize o menu  Movimentações',
+                    ),
+                  )
                   : ListView.builder(
                     itemCount: transactions.length + 2,
                     itemBuilder: (context, index) {

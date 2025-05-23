@@ -65,7 +65,10 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 TextFormField(
                   initialValue: _title,
-                  decoration: const InputDecoration(labelText: 'Título'),
+                  decoration: const InputDecoration(
+                    labelText: 'Título',
+                    border: OutlineInputBorder(),
+                  ),
                   validator:
                       (value) =>
                           value == null || value.isEmpty
@@ -76,7 +79,10 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 16),
                 TextFormField(
                   initialValue: _amount?.toString(),
-                  decoration: const InputDecoration(labelText: 'Valor'),
+                  decoration: const InputDecoration(
+                    labelText: 'Valor',
+                    border: OutlineInputBorder(),
+                  ),
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   validator: (value) {
                     if (value == null || value.isEmpty)
@@ -88,7 +94,10 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<CategoryModel>(
-                  decoration: const InputDecoration(labelText: 'Categoria'),
+                  decoration: const InputDecoration(
+                    labelText: 'Categoria',
+                    border: OutlineInputBorder(),
+                  ),
                   value: _selectedCategory,
                   items:
                       _categories
@@ -108,65 +117,54 @@ class _RegisterPageState extends State<RegisterPage> {
                       (value) =>
                           value == null ? 'Selecione uma categoria' : null,
                 ),
-                TextButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const CategoryRegisterPage(),
-                      ),
-                    );
-                    _loadCategories();
-                  },
-                  child: const Text(
-                    'Não encontrou a categoria? Cadastre-a aqui',
-                  ),
-                ),
                 SwitchListTile(
                   title: const Text('Entrada'),
                   value: _isIncome,
                   onChanged: (val) => setState(() => _isIncome = val),
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
+                SizedBox(
+                  width: 300.0,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
 
-                      if (widget.transaction == null) {
-                        final newTransaction = TransactionModel(
-                          id: DateTime.now().millisecondsSinceEpoch,
-                          description: _title!,
-                          amount: _amount!,
-                          isIncome: _isIncome,
-                          category: _selectedCategory!,
-                          date: DateTime.now(),
-                        );
+                        if (widget.transaction == null) {
+                          final newTransaction = TransactionModel(
+                            id: DateTime.now().millisecondsSinceEpoch,
+                            description: _title!,
+                            amount: _amount!,
+                            isIncome: _isIncome,
+                            category: _selectedCategory!,
+                            date: DateTime.now(),
+                          );
 
-                        Provider.of<TransactionViewModel>(
-                          context,
-                          listen: false,
-                        ).addTransaction(newTransaction);
-                      } else {
-                        final edited = TransactionModel(
-                          id: widget.transaction!.id,
-                          description: _title!,
-                          amount: _amount!,
-                          isIncome: _isIncome,
-                          category: _selectedCategory!,
-                          date: widget.transaction!.date,
-                        );
+                          Provider.of<TransactionViewModel>(
+                            context,
+                            listen: false,
+                          ).addTransaction(newTransaction);
+                        } else {
+                          final edited = TransactionModel(
+                            id: widget.transaction!.id,
+                            description: _title!,
+                            amount: _amount!,
+                            isIncome: _isIncome,
+                            category: _selectedCategory!,
+                            date: widget.transaction!.date,
+                          );
 
-                        Provider.of<TransactionViewModel>(
-                          context,
-                          listen: false,
-                        ).editTransaction(edited);
+                          Provider.of<TransactionViewModel>(
+                            context,
+                            listen: false,
+                          ).editTransaction(edited);
+                        }
+
+                        Navigator.pop(context); // Volta para a tela anterior
                       }
-
-                      Navigator.pop(context); // Volta para a tela anterior
-                    }
-                  },
-                  child: const Text('Salvar'),
+                    },
+                    child: const Text('Salvar'),
+                  ),
                 ),
               ],
             ),
