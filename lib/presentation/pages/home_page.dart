@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../data/models/transaction_model.dart';
 import '../../data/models/category_model.dart';
 import '../viewmodels/transaction_viewmodel.dart';
-import '../pages/register_page.dart';
+import 'transaction_page.dart';
 // Importe as páginas de Metas e Orçamento que você vai criar
 import '../pages/goals_page.dart'; // Exemplo
 // import '../pages/budget_page.dart'; // Exemplo
@@ -92,20 +92,17 @@ class _HomePageState extends State<HomePage> {
               // Opção para Cadastrar Metas
               ListTile(
                 leading: const Icon(Icons.track_changes),
-                title: const Text('Cadastrar Metas ( Em construção )'),
+                title: const Text('Cadastrar Metas'),
                 onTap: () {
                   // Fechar o drawer
                   Navigator.pop(context);
                   // Navegar para a página de Metas
-                  // Navigator.push(context, MaterialPageRoute(builder: (_) => GoalsPage())); // Exemplo
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => GoalsPage()),
+                  ); // Exemplo
                   // TODO: Implementar a navegação para a página de Metas
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Navegar para Cadastrar Metas'),
-                    ),
-                  );
                 },
-                enabled: false,
               ),
               // Opção para Cadastrar Orçamento/Limite de Gasto
               ListTile(
@@ -123,7 +120,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.receipt_long),
-                title: const Text('Movimentações'),
+                title: const Text('Cadastrar Transações'),
                 onTap: () {
                   Navigator.pop(context);
                   // Navega para a tela de movimentações
@@ -135,7 +132,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.category),
-                title: const Text('Categorias'),
+                title: const Text('Cadastrar Categorias'),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(

@@ -46,6 +46,44 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
+  void _saveTransaction() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      if (widget.transaction == null) {
+        final newTransaction = TransactionModel(
+          id: DateTime.now().microsecondsSinceEpoch,
+          description: _title!,
+          amount: _amount!,
+          isIncome: _isIncome,
+          category: _selectedCategory!,
+          date: DateTime.now(),
+        );
+
+        Provider.of<TransactionViewModel>(
+          context,
+          listen: false,
+        ).addTransaction(newTransaction);
+      } else {
+        final edited = TransactionModel(
+          id: widget.transaction!.id,
+          description: _title!,
+          amount: _amount!,
+          isIncome: _isIncome,
+          category: _selectedCategory!,
+          date: widget.transaction!.date,
+        );
+
+        Provider.of<TransactionViewModel>(
+          context,
+          listen: false,
+        ).editTransaction(edited);
+      }
+
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,45 +163,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 24),
                 SizedBox(
                   width: 300.0,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-
-                        if (widget.transaction == null) {
-                          final newTransaction = TransactionModel(
-                            id: DateTime.now().millisecondsSinceEpoch,
-                            description: _title!,
-                            amount: _amount!,
-                            isIncome: _isIncome,
-                            category: _selectedCategory!,
-                            date: DateTime.now(),
-                          );
-
-                          Provider.of<TransactionViewModel>(
-                            context,
-                            listen: false,
-                          ).addTransaction(newTransaction);
-                        } else {
-                          final edited = TransactionModel(
-                            id: widget.transaction!.id,
-                            description: _title!,
-                            amount: _amount!,
-                            isIncome: _isIncome,
-                            category: _selectedCategory!,
-                            date: widget.transaction!.date,
-                          );
-
-                          Provider.of<TransactionViewModel>(
-                            context,
-                            listen: false,
-                          ).editTransaction(edited);
-                        }
-
-                        Navigator.pop(context); // Volta para a tela anterior
-                      }
-                    },
-                    child: const Text('Salvar'),
+                  child: ElevatedButton.icon(
+                    onPressed: _saveTransaction,
+                    icon: const Icon(Icons.save),
+                    label: const Text('Salvar Transação'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      textStyle: const TextStyle(fontSize: 16),
+                    ),
                   ),
                 ),
               ],
