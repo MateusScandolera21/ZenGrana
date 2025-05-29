@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'presentation/pages/home_page.dart';
+import 'presentation/pages/initial_page.dart';
 import 'presentation/viewmodels/transaction_viewmodel.dart';
 
 class MyApp extends StatelessWidget {
@@ -12,10 +12,10 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Controle Financeiro',
+        title: 'Zen Grana',
         theme: ThemeData(primarySwatch: Colors.green),
-        home: HomePage(),
-      )
+        home: InitialPage(),
+      ),
     );
   }
 }

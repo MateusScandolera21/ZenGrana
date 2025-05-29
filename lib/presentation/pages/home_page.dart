@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Controle Financeiro"),
+          title: const Text("CM - Money Controller"),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Todos'),
