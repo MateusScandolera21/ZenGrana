@@ -8,7 +8,7 @@ import 'transaction_page.dart';
 import '../pages/goals_page.dart';
 import '../pages/budget_page.dart';
 import '../pages/category_register_page.dart';
-import '../pages/config_page.dart';
+import '../pages/settings_page.dart';
 
 class InitialPage extends StatefulWidget {
   @override
@@ -83,8 +83,7 @@ class _InitialPageState extends State<InitialPage> {
                   const SizedBox(height: 16),
                   SizedBox(
                     // <--- ENVOLVA O SingleChildScrollView em um SizedBox para limitar a altura
-                    height:
-                        120, // Altura que sua linha de cards ocupará.
+                    height: 120, // Altura que sua linha de cards ocupará.
                     child: SingleChildScrollView(
                       scrollDirection:
                           Axis.horizontal, // <--- SCROLL HORIZONTAL
@@ -169,7 +168,7 @@ class _InitialPageState extends State<InitialPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => ConfigPage(),
+                                  builder: (_) => SettingsPage(),
                                 ),
                               );
                             },
@@ -204,11 +203,7 @@ class _InitialPageState extends State<InitialPage> {
           CircleAvatar(
             radius: 35,
             backgroundColor: color.withOpacity(0.2),
-            child: Icon(
-              icon,
-              size: 35,
-              color: color,
-            ),
+            child: Icon(icon, size: 35, color: color),
           ),
           const SizedBox(height: 8),
           Text(
