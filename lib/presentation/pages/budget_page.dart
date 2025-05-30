@@ -1,10 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/budget_model.dart';
 import '../../data/models/category_model.dart';
 import '../viewmodels/transaction_viewmodel.dart';
+import '../viewmodels/category_viewmodel.dart'; // <--- Nova Importação: CategoryViewModel
+import '../../utils/list_extensions.dart'; // <--- Nova Importação: firstWhereOrNull se você criou
 
 class BudgetPage extends StatefulWidget {
   const BudgetPage({Key? key}) : super(key: key);
@@ -25,30 +26,27 @@ class _BudgetPageState extends State<BudgetPage> {
   @override
   void initState() {
     super.initState();
-    // No initState, você pode carregar as categorias.
-    // Usamos WidgetsBinding.instance.addPostFrameCallback para garantir que o context esteja pronto.
+    // Usamos addPostFrameCallback para garantir que o context esteja pronto para o Provider.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCategories();
     });
   }
 
   void _loadCategories() {
-    // Acessar as categorias do TransactionViewModel ou de um CategoryViewModel
-    // Aqui presumo que as categorias estão no TransactionViewModel,
-    // se você tiver um CategoryViewModel, use-o.
-    final transactionViewModel = Provider.of<TransactionViewModel>(
+    // Agora acessamos as categorias do CategoryViewModel, que deve ter a lista completa.
+    final categoryViewModel = Provider.of<CategoryViewModel>(
       context,
       listen: false,
     );
 
-    // Pegar todas as categorias únicas das transações existentes
-    // ou de uma lista de categorias pré-cadastradas no seu ViewModel
     setState(() {
       _availableCategories =
-          transactionViewModel.transactions
-              .map((t) => t.category)
-              .toSet()
-              .toList();
+          categoryViewModel.categories; // Obter todas as categorias cadastradas
+      // Se não houver categoria selecionada e houver categorias disponíveis,
+      // você pode pré-selecionar a primeira ou deixar nulo para "Todas as categorias".
+      if (_selectedCategory == null && _availableCategories.isNotEmpty) {
+        // Opcional: _selectedCategory = _availableCategories.first;
+      }
     });
   }
 
@@ -56,28 +54,25 @@ class _BudgetPageState extends State<BudgetPage> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      // **ATENÇÃO:** Garanta que a Box 'budgets' esteja aberta antes de usar.
-      // Idealmente, isso é feito no 'main.dart' da sua aplicação.
+      // Certifique-se de que a Box 'budgets' esteja aberta em 'main.dart'.
       final box = Hive.box<BudgetModel>('budgets');
 
-      // Se _selectedCategory for opcional, o campo 'category' no BudgetModel
-      // também deve ser anulável (CategoryModel?). Se não for,
-      // você precisará garantir que uma categoria seja selecionada.
+      // Se _selectedCategory for nulo, significa que o orçamento é para 'Todas as categorias'.
+      // O BudgetModel.category deve ser anulável (CategoryModel?).
       final budget = BudgetModel(
         id: DateTime.now().millisecondsSinceEpoch,
         name: _name!,
         amount: _amount!,
-        category: _selectedCategory, // Removido '!' para permitir nulo
+        // Se _selectedCategory for null, passa null. Caso contrário, passa o objeto CategoryModel.
+        category: _selectedCategory,
       );
 
       box.add(budget);
 
-      // Feedback para o usuário
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Orçamento salvo com sucesso!')),
       );
 
-      // Volta para a tela anterior
       Navigator.pop(context);
     }
   }
@@ -93,6 +88,7 @@ class _BudgetPageState extends State<BudgetPage> {
           child: Column(
             children: [
               TextFormField(
+                initialValue: _name, // Para re-popular se estiver editando
                 decoration: const InputDecoration(
                   labelText: 'Descrição do Orçamento',
                   border: OutlineInputBorder(),
@@ -106,11 +102,14 @@ class _BudgetPageState extends State<BudgetPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
+                initialValue: _amount?.toString(), // Para re-popular
                 decoration: const InputDecoration(
                   labelText: 'Valor do Orçamento (R\$)',
                   border: OutlineInputBorder(),
                 ),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Informe o valor do orçamento';
@@ -130,22 +129,33 @@ class _BudgetPageState extends State<BudgetPage> {
               const SizedBox(height: 16),
               DropdownButtonFormField<CategoryModel>(
                 decoration: const InputDecoration(
-                  labelText: 'Categoria ( Opcional )',
+                  labelText: 'Categoria (Opcional)',
                   border: OutlineInputBorder(),
                 ),
                 value: _selectedCategory,
                 hint: const Text('Selecione uma categoria'),
                 items: [
-                  const DropdownMenuItem(
+                  // Opção para "Todas as categorias" (valor nulo)
+                  const DropdownMenuItem<CategoryModel>(
                     value: null,
                     child: Text('Todas as categorias'),
                   ),
+                  // Mapeia suas categorias disponíveis para DropdownMenuItems
                   ..._availableCategories
                       .map(
-                        (cat) =>
-                            DropdownMenuItem(value: cat, child: Text(cat.name)),
+                        (cat) => DropdownMenuItem(
+                          value: cat,
+                          child: Row(
+                            // Exibe ícone e nome da categoria
+                            children: [
+                              Icon(cat.iconData, color: cat.iconColor),
+                              const SizedBox(width: 8),
+                              Text(cat.name),
+                            ],
+                          ),
+                        ),
                       )
-                      .toList(),
+                      .toList(), // Manter o .toList() aqui é ok pois não está em um spread
                 ],
                 onChanged: (value) {
                   setState(() {
@@ -155,14 +165,20 @@ class _BudgetPageState extends State<BudgetPage> {
               ),
               const SizedBox(height: 24),
               SizedBox(
-                width: 300.0,
+                width:
+                    double
+                        .infinity, // Usar double.infinity para ocupar largura total
                 child: ElevatedButton.icon(
                   onPressed: _saveBudget,
                   icon: const Icon(Icons.save),
                   label: const Text('Salvar Orçamento'),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    textStyle: const TextStyle(fontSize: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                    ), // Aumentei o padding vertical
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                    ), // Aumentei o tamanho do texto
                   ),
                 ),
               ),
