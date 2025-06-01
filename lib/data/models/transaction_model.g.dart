@@ -21,7 +21,7 @@ class TransactionModelAdapter extends TypeAdapter<TransactionModel> {
       description: fields[1] as String,
       amount: fields[2] as double,
       date: fields[3] as DateTime,
-      categoryId: fields[4] as int,
+      categoryId: fields[4] as String,
       type: fields[5] as TransactionType,
     );
   }

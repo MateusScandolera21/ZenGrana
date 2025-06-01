@@ -8,7 +8,7 @@ import 'presentation/viewmodels/transaction_viewmodel.dart'; // Se você estiver
 import 'data/models/budget_model.dart';
 import 'data/models/goals_model.dart';
 
-import 'app.dart'; // <- Seu MyApp real está aqui
+import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

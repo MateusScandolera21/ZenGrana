@@ -1,37 +1,33 @@
-import 'package:flutter/material.dart'; // Importe para usar IconData, se quiser mapear diretamente
+// lib/data/models/category_model.dart
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 part 'category_model.g.dart';
 
-// Certifique-se que o TypeId seja único e não usado por outros modelos
-@HiveType(typeId: 4) // Exemplo de TypeId. Verifique se não colide.
+@HiveType(typeId: 4)
 class CategoryModel extends HiveObject {
   @HiveField(0)
-  final int id; // Usado para identificar a categoria (por exemplo, ao filtrar)
-
+  final String id;
   @HiveField(1)
   final String name;
-
   @HiveField(2)
-  final int iconCodePoint; // <-- Adicione este campo para o ícone
-  // Se quiser cor por categoria
+  final int iconCodePoint;
   @HiveField(3)
-  final int iconColorValue; // <-- Adicione este campo para a cor (valor int do Color)
+  final int iconColorValue;
+
+  IconData get iconData => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
+  Color get iconColor => Color(iconColorValue);
 
   CategoryModel({
     required this.id,
     required this.name,
     required this.iconCodePoint,
-    required this.iconColorValue, // Adicione no construtor
+    required this.iconColorValue,
   });
 
-  // Getter para converter iconCodePoint e iconColorValue em IconData e Color
-  IconData get iconData => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
-  Color get iconColor => Color(iconColorValue); // Convertendo int para Color
-
-  // Métodos de cópia e comparação (opcional, mas bom para imutabilidade e testes)
+  // Adiciona o método copyWith
   CategoryModel copyWith({
-    int? id,
+    String? id,
     String? name,
     int? iconCodePoint,
     int? iconColorValue,

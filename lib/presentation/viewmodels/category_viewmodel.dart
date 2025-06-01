@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../../data/models/category_model.dart';
-import '../../utils/list_extensions.dart'; // <--- Adicione esta linha
+import '../../utils/list_extensions.dart';
 
 class CategoryViewModel extends ChangeNotifier {
   late Box<CategoryModel> _categoryBox;
@@ -21,39 +21,39 @@ class CategoryViewModel extends ChangeNotifier {
 
   void _loadCategories() {
     _categories = _categoryBox.values.toList();
+    // Opcional: Adicione prints de debug para verificar se as categorias estão sendo carregadas
+    print(
+      'DEBUG: CategoryViewModel carregou ${_categories.length} categorias.',
+    );
+    // for (var cat in _categories) {
+    //   print('DEBUG: Categoria: ${cat.name}, ID: ${cat.id}, Ícone: ${cat.iconCodePoint}, Cor: ${cat.iconColorValue}');
+    // }
     notifyListeners();
   }
 
   void addCategory(CategoryModel category) {
-    _categoryBox.add(category);
+    _categoryBox.put(
+      category.id,
+      category,
+    ); // Usa put(id, value) para controle explícito do ID
+    print('DEBUG: Categoria adicionada (ID: ${category.id}): ${category.name}');
+    _loadCategories(); // Recarrega a lista e notifica
+  }
+
+  void updateCategory(CategoryModel category) {
+    _categoryBox.put(category.id, category); // Atualiza usando put
+    print('DEBUG: Categoria atualizada (ID: ${category.id}): ${category.name}');
     _loadCategories();
   }
 
-  CategoryModel? getCategoryById(int id) {
+  void deleteCategory(String id) {
+    // ID da categoria é int
+    _categoryBox.delete(id); // Deleta pela chave (que é o ID)
+    print('DEBUG: Categoria deletada (ID: $id)');
+    _loadCategories();
+  }
+
+  CategoryModel? getCategoryById(String id) {
     return _categories.firstWhereOrNull((cat) => cat.id == id);
   }
-
-  // Você precisará adicionar o método firstWhereOrNull em uma extensão ou helper,
-  // ou usar tryFirstWhere para evitar erros se não encontrar.
-  // Exemplo simples (adicione essa extensão em algum lugar, ex: lib/utils/list_extensions.dart):
-  /*
-  extension ListExtension<T> on List<T> {
-    T? firstWhereOrNull(bool Function(T element) test) {
-      for (T element in this) {
-        if (test(element)) return element;
-      }
-      return null;
-    }
-  }
-  */
-  // Ou use um loop for ou try-catch:
-  // CategoryModel? getCategoryById(int id) {
-  //   try {
-  //     return _categories.firstWhere((cat) => cat.id == id);
-  //   } catch (e) {
-  //     return null;
-  //   }
-  // }
-
-  // TODO: Adicionar métodos para editar e deletar categorias
 }

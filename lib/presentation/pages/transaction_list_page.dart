@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/transaction_model.dart';
 import '../../data/models/category_model.dart';
-import '../viewmodels/transaction_viewmodel.dart'; // Seu ViewModel de transações
-// Importe seu ViewModel de categorias se você tiver um separado, ou acesse as categorias pelo TransactionViewModel
-import '../viewmodels/category_viewmodel.dart'; // Assumindo que você terá um CategoryViewModel
-import '../widgets/transaction_card.dart'; // O widget do card que acabamos de criar
-import 'transaction_page.dart'; // A tela de cadastro de transação
+import '../viewmodels/transaction_viewmodel.dart';
+import '../viewmodels/category_viewmodel.dart';
+import '../widgets/transaction_card.dart';
+import 'transaction_page.dart';
 
 class TransactionListPage extends StatefulWidget {
   const TransactionListPage({Key? key}) : super(key: key);
@@ -35,7 +34,6 @@ class _TransactionListPageState extends State<TransactionListPage>
     super.dispose();
   }
 
-  // Função para abrir o seletor de data
   Future<void> _selectDateRange(BuildContext context) async {
     final DateTimeRange? picked = await showDateRangePicker(
       context: context,
@@ -57,7 +55,6 @@ class _TransactionListPageState extends State<TransactionListPage>
         _selectedStartDate = picked.start;
         _selectedEndDate = picked.end;
       });
-      // Notificar o ViewModel para aplicar o filtro de data
       Provider.of<TransactionViewModel>(
         context,
         listen: false,
@@ -65,7 +62,6 @@ class _TransactionListPageState extends State<TransactionListPage>
     }
   }
 
-  // Função para selecionar a categoria (para o filtro)
   Future<void> _selectCategoryFilter(BuildContext context) async {
     final categoryViewModel = Provider.of<CategoryViewModel>(
       context,
@@ -82,17 +78,13 @@ class _TransactionListPageState extends State<TransactionListPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Opção para remover filtro
                 ListTile(
                   leading: const Icon(Icons.clear),
                   title: const Text('Todas as Categorias'),
                   onTap: () {
-                    Navigator.of(
-                      context,
-                    ).pop(null); // Retorna nulo para remover o filtro
+                    Navigator.of(context).pop(null);
                   },
                 ),
-                // Lista de categorias
                 ...categories
                     .map(
                       (category) => ListTile(
@@ -115,7 +107,7 @@ class _TransactionListPageState extends State<TransactionListPage>
       setState(() {
         _selectedCategory = selected;
       });
-      // Notificar o ViewModel para aplicar o filtro de categoria
+      // Correção: _selectedCategory?.id agora é String?
       Provider.of<TransactionViewModel>(
         context,
         listen: false,
@@ -126,19 +118,15 @@ class _TransactionListPageState extends State<TransactionListPage>
   @override
   Widget build(BuildContext context) {
     final transactionViewModel = Provider.of<TransactionViewModel>(context);
-    final categoryViewModel = Provider.of<CategoryViewModel>(
-      context,
-    ); // Para buscar nomes/ícones de categorias
+    final categoryViewModel = Provider.of<CategoryViewModel>(context);
 
-    // Lista de transações filtradas pelo ViewModel (data, tipo e categoria)
     final List<TransactionModel> transactions =
         transactionViewModel.filteredTransactions;
 
-    // Função auxiliar para construir as listas de transações por tipo
     Widget _buildTransactionList(TransactionType? type) {
       final List<TransactionModel> filteredByType =
           transactions.where((t) {
-            if (type == null) return true; // Para a aba "Todos"
+            if (type == null) return true;
             return t.type == type;
           }).toList();
 
@@ -177,6 +165,7 @@ class _TransactionListPageState extends State<TransactionListPage>
         itemCount: filteredByType.length,
         itemBuilder: (context, index) {
           final transaction = filteredByType[index];
+          // Correção: getCategoryById agora espera String
           final category = categoryViewModel.getCategoryById(
             transaction.categoryId,
           );
@@ -197,7 +186,6 @@ class _TransactionListPageState extends State<TransactionListPage>
           ],
         ),
         actions: [
-          // Botão de filtro por data
           IconButton(
             icon: Icon(
               _selectedStartDate != null ? Icons.date_range : Icons.filter_alt,
@@ -205,7 +193,6 @@ class _TransactionListPageState extends State<TransactionListPage>
             tooltip: 'Filtrar por Data',
             onPressed: () => _selectDateRange(context),
           ),
-          // Botão de filtro por categoria
           IconButton(
             icon: Icon(
               _selectedCategory != null ? Icons.category : Icons.filter_list,
@@ -218,14 +205,13 @@ class _TransactionListPageState extends State<TransactionListPage>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildTransactionList(null), // Aba "Todos"
-          _buildTransactionList(TransactionType.income), // Aba "Entradas"
-          _buildTransactionList(TransactionType.expense), // Aba "Saídas"
+          _buildTransactionList(null),
+          _buildTransactionList(TransactionType.income),
+          _buildTransactionList(TransactionType.expense),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navega para a tela de cadastro de transação
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => RegisterPage()),

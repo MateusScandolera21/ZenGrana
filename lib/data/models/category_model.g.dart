@@ -17,7 +17,7 @@ class CategoryModelAdapter extends TypeAdapter<CategoryModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return CategoryModel(
-      id: fields[0] as int,
+      id: fields[0] as String,
       name: fields[1] as String,
       iconCodePoint: fields[2] as int,
       iconColorValue: fields[3] as int,

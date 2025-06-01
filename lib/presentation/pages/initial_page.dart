@@ -10,6 +10,7 @@ import '../pages/budget_page.dart';
 import '../pages/category_register_page.dart';
 import '../pages/settings_page.dart';
 import '../pages/transaction_list_page.dart';
+import '../pages/category_list_page.dart';
 
 class InitialPage extends StatefulWidget {
   @override
@@ -151,7 +152,7 @@ class _InitialPageState extends State<InitialPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => CategoryRegisterPage(),
+                                  builder: (_) => CategoryListPage(),
                                 ),
                               );
                             },

@@ -1,6 +1,7 @@
 // lib/app.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // <--- Já está aqui!
 
 import 'presentation/pages/initial_page.dart';
 import 'presentation/viewmodels/transaction_viewmodel.dart';
@@ -40,6 +41,20 @@ class MyApp extends StatelessWidget {
         themeMode:
             ThemeMode
                 .system, // Por enquanto, usa o tema do sistema (ou você pode definir Light/Dark aqui)
+        // --- ADICIONE ESTAS DUAS PROPRIEDADES PARA SUPORTE À LOCALIZAÇÃO ---
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', ''), // Inglês (para fallback ou se você quiser suportar)
+          Locale('pt', 'BR'), // Português do Brasil
+          // Adicione outros idiomas que seu app precisa suportar aqui, ex:
+          // Locale('es', ''), // Espanhol
+        ],
+
+        // --- FIM DAS PROPRIEDADES DE LOCALIZAÇÃO ---
         home: InitialPage(),
       ),
     );

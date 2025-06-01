@@ -101,7 +101,7 @@ class TransactionViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void applyCategoryFilter(int? categoryId) {
+  void applyCategoryFilter(String? categoryId) {
     if (categoryId == null) {
       _filteredTransactions = List.from(_allTransactions);
     } else {

@@ -34,7 +34,7 @@ class TransactionModel extends HiveObject {
   final DateTime date;
 
   @HiveField(4) // Agora é o ID da categoria
-  final int categoryId; // Armazena apenas o ID da categoria
+  final String categoryId; // Armazena apenas o ID da categoria
 
   @HiveField(5)
   final TransactionType type; // Usando o enum TransactionType
@@ -54,7 +54,7 @@ class TransactionModel extends HiveObject {
     String? description,
     double? amount,
     DateTime? date,
-    int? categoryId,
+    String? categoryId,
     TransactionType? type,
   }) {
     return TransactionModel(
