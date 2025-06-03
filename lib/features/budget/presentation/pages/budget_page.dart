@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 // import 'package:hive/hive.dart'; // Remova este import, pois o ViewModel lidará com o Hive
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart'; // Para gerar IDs únicos
-import '../../data/models/budget_model.dart';
-import '../../data/models/category_model.dart';
+import '../../../../data/models/budget_model.dart';
+import '../../../../data/models/category_model.dart';
 // import '../viewmodels/transaction_viewmodel.dart'; // Este import não é necessário aqui
-import '../viewmodels/category_viewmodel.dart';
+import '../../../category/presentation/viewmodels/category_viewmodel.dart';
 import '../viewmodels/budget_viewmodel.dart'; // <--- Nova Importação: BudgetViewModel
 
 // import '../../utils/list_extensions.dart'; // <--- Mantenha se você realmente tem esse arquivo e usa firstWhereOrNull

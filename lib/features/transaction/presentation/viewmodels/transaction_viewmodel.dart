@@ -1,9 +1,9 @@
 // lib/presentation/viewmodels/transaction_viewmodel.dart
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../data/models/transaction_model.dart';
-import '../../data/models/category_model.dart'; // Mantenha, pois pode ser útil para exibição ou lógica
-import '../../data/models/budget_model.dart'; // <--- NOVO IMPORT para o método de cálculo de orçamento
+import '../../../../data/models/transaction_model.dart';
+import '../../../../data/models/category_model.dart'; // Mantenha, pois pode ser útil para exibição ou lógica
+import '../../../../data/models/budget_model.dart'; // <--- NOVO IMPORT para o método de cálculo de orçamento
 
 class TransactionViewModel extends ChangeNotifier {
   List<TransactionModel> _allTransactions =

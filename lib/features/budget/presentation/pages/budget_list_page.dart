@@ -1,22 +1,73 @@
 // lib/presentation/pages/budget_list_page.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Para formatar datas e moedas
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../data/models/budget_model.dart';
-import '../../data/models/category_model.dart'; // Para obter dados da categoria
+import '../../../../data/models/budget_model.dart';
+import '../../../../data/models/category_model.dart';
 import '../viewmodels/budget_viewmodel.dart';
-import '../viewmodels/category_viewmodel.dart';
-import '../viewmodels/transaction_viewmodel.dart'; // Para calcular o gasto do orçamento
+import '../../../category/presentation/viewmodels/category_viewmodel.dart';
+import '../../../transaction/presentation/viewmodels/transaction_viewmodel.dart';
 import 'budget_page.dart'; // Para navegar para a tela de registro/edição
+// Importe o CustomScaffold
+import '../../../../core/shared/widgets/custom_scaffold.dart'; // Ajuste o caminho conforme sua estrutura
 
 class BudgetListPage extends StatelessWidget {
   const BudgetListPage({Key? key}) : super(key: key);
+
+  // Diálogo de confirmação para exclusão
+  void _confirmDeleteBudget(
+    BuildContext context,
+    BudgetViewModel budgetViewModel,
+    BudgetModel budget,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Confirmar Exclusão'),
+          content: Text(
+            'Tem certeza que deseja excluir o orçamento "${budget.name}"?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                budgetViewModel.deleteBudget(budget.id);
+                Navigator.of(dialogContext).pop(); // Fecha o diálogo
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Orçamento excluído!')),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Função para navegar para a página de registro de orçamento
+  void _navigateToBudgetRegisterPage(
+    BuildContext context, {
+    BudgetModel? budget,
+  }) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (ctx) => BudgetPage(budget: budget)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     // Usamos MultiProvider para ter acesso a todos os ViewModels necessários
     return MultiProvider(
       providers: [
+        // Usar .value para ViewModels que já são fornecidos acima na árvore de widgets
         ChangeNotifierProvider.value(
           value: Provider.of<BudgetViewModel>(context),
         ),
@@ -27,8 +78,19 @@ class BudgetListPage extends StatelessWidget {
           value: Provider.of<TransactionViewModel>(context),
         ),
       ],
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Meus Orçamentos')),
+      // Agora, o Consumer3 e o resto do corpo são encapsulados pelo CustomScaffold
+      child: CustomScaffold(
+        title: 'Meus Orçamentos', // Título para o CustomScaffold
+        // Não há TabBar aqui, então appBarBottom não é necessário
+        // Não há ações na AppBar padrão para esta página, o botão de adicionar fica no FAB
+        // appBarActions: [],
+        appBarActions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _navigateToBudgetRegisterPage(context),
+            tooltip: 'Novo orçamento',
+          ),
+        ],
         body: Consumer3<
           BudgetViewModel,
           CategoryViewModel,
@@ -107,13 +169,10 @@ class BudgetListPage extends StatelessWidget {
                                 IconButton(
                                   icon: const Icon(Icons.edit, size: 20),
                                   onPressed: () {
-                                    Navigator.push(
+                                    _navigateToBudgetRegisterPage(
                                       context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) =>
-                                                BudgetPage(budget: budget),
-                                      ),
+                                      budget:
+                                          budget, // Passando o orçamento para edição
                                     );
                                   },
                                 ),
@@ -219,53 +278,7 @@ class BudgetListPage extends StatelessWidget {
             );
           },
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const BudgetPage()),
-            );
-          },
-          child: const Icon(Icons.add),
-        ),
       ),
-    );
-  }
-
-  // Diálogo de confirmação para exclusão
-  void _confirmDeleteBudget(
-    BuildContext context,
-    BudgetViewModel budgetViewModel,
-    BudgetModel budget,
-  ) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Confirmar Exclusão'),
-          content: Text(
-            'Tem certeza que deseja excluir o orçamento "${budget.name}"?',
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Excluir', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                budgetViewModel.deleteBudget(budget.id);
-                Navigator.of(dialogContext).pop(); // Fecha o diálogo
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Orçamento excluído!')),
-                );
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

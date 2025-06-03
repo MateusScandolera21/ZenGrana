@@ -1,7 +1,7 @@
 // lib/presentation/viewmodels/settings_viewmodel.dart
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../data/models/app_theme_mode.dart'; // Importa o enum que acabamos de criar
+import '../../../../data/models/app_theme_mode.dart'; // Importa o enum que acabamos de criar
 
 class SettingsViewModel extends ChangeNotifier {
   late Box<AppThemeMode> _settingsBox;

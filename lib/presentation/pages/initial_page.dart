@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../pages/goals_page.dart';
-import '../pages/settings_page.dart';
-import '../pages/transaction_list_page.dart';
-import '../pages/category_list_page.dart';
-import '../pages/budget_list_page.dart';
+import '../../features/goals/presentation/pages/goals_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/transaction/presentation/pages/transaction_list_page.dart';
+import '../../features/category/presentation/pages/category_list_page.dart';
+import '../../features/budget/presentation/pages/budget_list_page.dart';
+import '../../features/goals/presentation/pages/goals_list_page.dart';
 
 class InitialPage extends StatefulWidget {
   @override
@@ -94,7 +95,9 @@ class _InitialPageState extends State<InitialPage> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => GoalsPage()),
+                                MaterialPageRoute(
+                                  builder: (_) => GoalsListPage(),
+                                ),
                               );
                             },
                           ),

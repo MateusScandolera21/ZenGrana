@@ -1,9 +1,11 @@
 // lib/presentation/pages/category_list_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/models/category_model.dart';
+import '../../../../data/models/category_model.dart';
 import '../viewmodels/category_viewmodel.dart';
 import 'category_register_page.dart'; // Para adicionar/editar categorias
+// Importe o CustomScaffold
+import '../../../../core/shared/widgets/custom_scaffold.dart'; // Ajuste o caminho conforme sua estrutura
 
 class CategoryListPage extends StatefulWidget {
   const CategoryListPage({Key? key}) : super(key: key);
@@ -13,10 +15,37 @@ class CategoryListPage extends StatefulWidget {
 }
 
 class _CategoryListPageState extends State<CategoryListPage> {
+  // Função para navegar para a tela de registro de categoria
+  void _navigateToAddCategory() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CategoryRegisterPage()),
+    );
+  }
+
+  // Função para navegar para a tela de edição de categoria
+  void _navigateToEditCategory(CategoryModel category) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CategoryRegisterPage(category: category),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Minhas Categorias')),
+    return CustomScaffold(
+      title: 'Minhas Categorias', // Título para o CustomScaffold
+      // Botão de adicionar agora na AppBar
+      appBarActions: [
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: _navigateToAddCategory, // Chamando a função de navegação
+          tooltip:
+              'Adicionar nova categoria', // Dica de ferramenta para o botão
+        ),
+      ],
       body: Consumer<CategoryViewModel>(
         builder: (context, categoryViewModel, child) {
           final categories = categoryViewModel.categories;
@@ -25,6 +54,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
             return const Center(
               child: Text(
                 'Nenhuma categoria cadastrada. Toque no "+" para adicionar.',
+                textAlign: TextAlign.center, // Centraliza o texto
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ), // Estilo para padronizar
               ),
             );
           }
@@ -45,14 +79,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
                     DismissDirection
                         .endToStart, // Deslizar da direita para a esquerda
                 onDismissed: (direction) {
-                  // Salva a categoria temporariamente para possibilitar desfazer
                   final CategoryModel deletedCategory = category;
-                  final int deletedIndex = index;
-
-                  // Remove a categoria do ViewModel
                   categoryViewModel.deleteCategory(category.id);
 
-                  // Exibe um SnackBar para confirmar a exclusão e oferecer desfazer
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -61,11 +90,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
                       action: SnackBarAction(
                         label: 'Desfazer',
                         onPressed: () {
-                          // Adiciona a categoria de volta
+                          // Note: A re-inserção precisa ser tratada pelo ViewModel para manter a ordem se for crucial.
+                          // Aqui, simplesmente adicionamos de volta, o que pode mudar a posição.
                           categoryViewModel.addCategory(deletedCategory);
-                          // Nota: O addCategory() irá apenas adicionar. Se você quer re-inserir na mesma posição,
-                          // o ViewModel precisaria de um método para isso, ou usar uma estratégia de lista temporária.
-                          // Para simplicidade, addCategory() a colocará no final ou onde o Hive organizar.
                         },
                       ),
                     ),
@@ -84,47 +111,27 @@ class _CategoryListPageState extends State<CategoryListPage> {
                   title: Text(category.name),
                   trailing: IconButton(
                     icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      // Navega para a tela de registro/edição com a categoria existente
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) =>
-                                  CategoryRegisterPage(category: category),
-                        ),
-                      );
-                    },
+                    onPressed:
+                        () => _navigateToEditCategory(
+                          category,
+                        ), // Chama a função auxiliar
                   ),
-                  onTap: () {
-                    // Também pode navegar para edição ao tocar na lista
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) =>
-                                CategoryRegisterPage(category: category),
-                      ),
-                    );
-                  },
+                  onTap:
+                      () => _navigateToEditCategory(
+                        category,
+                      ), // Também pode navegar para edição ao tocar
                 ),
               );
             },
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navega para a tela de registro para adicionar uma nova categoria
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CategoryRegisterPage(),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
+      // Removemos o FloatingActionButton para não haver botões duplicados
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _navigateToAddCategory,
+      //   tooltip: 'Adicionar nova categoria',
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 }

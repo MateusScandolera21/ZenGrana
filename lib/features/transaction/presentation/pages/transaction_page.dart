@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart'; // Usar hive_flutter para openBox
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart'; // Adicionar para formatação de data
-import '../../data/models/transaction_model.dart';
+import '../../../../data/models/transaction_model.dart';
 import '../viewmodels/transaction_viewmodel.dart';
-import '../../data/models/category_model.dart';
-import 'category_register_page.dart';
-import '../viewmodels/category_viewmodel.dart';
+import '../../../../data/models/category_model.dart';
+import '../../../category/presentation/pages/category_register_page.dart';
+import '../../../category/presentation/viewmodels/category_viewmodel.dart';
 
 class RegisterPage extends StatefulWidget {
   final TransactionModel? transaction;

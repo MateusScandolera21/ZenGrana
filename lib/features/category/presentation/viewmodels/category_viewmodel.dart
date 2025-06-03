@@ -1,8 +1,8 @@
 // lib/presentation/viewmodels/category_viewmodel.dart
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import '../../data/models/category_model.dart';
-import '../../utils/list_extensions.dart';
+import '../../../../data/models/category_model.dart';
+import '../../../../utils/list_extensions.dart';
 
 class CategoryViewModel extends ChangeNotifier {
   late Box<CategoryModel> _categoryBox;

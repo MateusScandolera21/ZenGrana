@@ -1,12 +1,14 @@
 // lib/presentation/pages/transaction_list_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/models/transaction_model.dart';
-import '../../data/models/category_model.dart';
+import '../../../../data/models/transaction_model.dart';
+import '../../../../data/models/category_model.dart';
 import '../viewmodels/transaction_viewmodel.dart';
-import '../viewmodels/category_viewmodel.dart';
+import '../../../category/presentation/viewmodels/category_viewmodel.dart';
 import '../widgets/transaction_card.dart';
-import 'transaction_page.dart';
+import 'transaction_page.dart'; // Provavelmente a página de registro/edição de transações
+// Importe o CustomScaffold
+import '../../../../core/shared/widgets/custom_scaffold.dart'; // Ajuste o caminho conforme sua estrutura
 
 class TransactionListPage extends StatefulWidget {
   const TransactionListPage({Key? key}) : super(key: key);
@@ -107,12 +109,21 @@ class _TransactionListPageState extends State<TransactionListPage>
       setState(() {
         _selectedCategory = selected;
       });
-      // Correção: _selectedCategory?.id agora é String?
       Provider.of<TransactionViewModel>(
         context,
         listen: false,
       ).applyCategoryFilter(_selectedCategory?.id);
     }
+  }
+
+  // Função para navegar para a página de registro de transação
+  void _navigateToTransactionRegisterPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RegisterPage(),
+      ), // Assumindo TransactionPage é a tela de registro
+    );
   }
 
   @override
@@ -147,12 +158,8 @@ class _TransactionListPageState extends State<TransactionListPage>
               ),
               const SizedBox(height: 20),
               ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => RegisterPage()),
-                  );
-                },
+                onPressed:
+                    _navigateToTransactionRegisterPage, // Usa a função auxiliar
                 icon: const Icon(Icons.add),
                 label: const Text('Adicionar Transação'),
               ),
@@ -165,7 +172,6 @@ class _TransactionListPageState extends State<TransactionListPage>
         itemCount: filteredByType.length,
         itemBuilder: (context, index) {
           final transaction = filteredByType[index];
-          // Correção: getCategoryById agora espera String
           final category = categoryViewModel.getCategoryById(
             transaction.categoryId,
           );
@@ -174,34 +180,39 @@ class _TransactionListPageState extends State<TransactionListPage>
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Movimentações'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Todos'),
-            Tab(text: 'Entradas'),
-            Tab(text: 'Saídas'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _selectedStartDate != null ? Icons.date_range : Icons.filter_alt,
-            ),
-            tooltip: 'Filtrar por Data',
-            onPressed: () => _selectDateRange(context),
-          ),
-          IconButton(
-            icon: Icon(
-              _selectedCategory != null ? Icons.category : Icons.filter_list,
-            ),
-            tooltip: 'Filtrar por Categoria',
-            onPressed: () => _selectCategoryFilter(context),
-          ),
+    return CustomScaffold(
+      title: 'Movimentações', // Título para o CustomScaffold
+      appBarBottom: TabBar(
+        // Passa a TabBar para o appBarBottom
+        controller: _tabController,
+        tabs: const [
+          Tab(text: 'Todos'),
+          Tab(text: 'Entradas'),
+          Tab(text: 'Saídas'),
         ],
       ),
+      appBarActions: [
+        IconButton(
+          icon: Icon(
+            _selectedStartDate != null ? Icons.date_range : Icons.filter_alt,
+          ),
+          tooltip: 'Filtrar por Data',
+          onPressed: () => _selectDateRange(context),
+        ),
+        IconButton(
+          icon: Icon(
+            _selectedCategory != null ? Icons.category : Icons.filter_list,
+          ),
+          tooltip: 'Filtrar por Categoria',
+          onPressed: () => _selectCategoryFilter(context),
+        ),
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () => _navigateToTransactionRegisterPage(),
+          tooltip: 'Adicionar nova transação',
+        ),
+        // Não adicionamos o botão de '+' aqui, ele fica no FAB
+      ],
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -209,15 +220,6 @@ class _TransactionListPageState extends State<TransactionListPage>
           _buildTransactionList(TransactionType.income),
           _buildTransactionList(TransactionType.expense),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => RegisterPage()),
-          );
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }

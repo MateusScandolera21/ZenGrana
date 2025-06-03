@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart'; // Mantém para MultiProvider no MyApp, se aplicável
 import 'data/models/category_model.dart';
 import 'data/models/transaction_model.dart'; // Contém TransactionModel e TransactionType
-import 'presentation/viewmodels/transaction_viewmodel.dart'; // Se você estiver usando Provider
+import 'features/transaction/presentation/viewmodels/transaction_viewmodel.dart'; // Se você estiver usando Provider
 import 'data/models/budget_model.dart';
 import 'data/models/goals_model.dart';
 import 'data/models/app_theme_mode.dart';

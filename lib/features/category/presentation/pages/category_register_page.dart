@@ -1,7 +1,7 @@
 // lib/presentation/pages/category_register_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/models/category_model.dart';
+import '../../../../data/models/category_model.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:uuid/uuid.dart';
 import '../viewmodels/category_viewmodel.dart';

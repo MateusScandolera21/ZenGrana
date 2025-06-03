@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'presentation/pages/initial_page.dart';
-import 'presentation/viewmodels/transaction_viewmodel.dart';
-import 'presentation/viewmodels/category_viewmodel.dart';
-import 'presentation/viewmodels/budget_viewmodel.dart';
-import 'presentation/viewmodels/settings_viewmodel.dart'; // <--- NOVO IMPORT DO SETTINGS VIEWMODEL
+import 'features/transaction/presentation/viewmodels/transaction_viewmodel.dart';
+import 'features/category/presentation/viewmodels/category_viewmodel.dart';
+import 'features/budget/presentation/viewmodels/budget_viewmodel.dart';
+import 'features/settings/presentation/viewmodels/settings_viewmodel.dart'; // <--- NOVO IMPORT DO SETTINGS VIEWMODEL
 
 class MyApp extends StatelessWidget {
   @override

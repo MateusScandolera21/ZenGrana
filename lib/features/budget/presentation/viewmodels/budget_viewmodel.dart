@@ -1,8 +1,8 @@
 // lib/presentation/viewmodels/budget_viewmodel.dart
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../data/models/budget_model.dart';
-import '../../data/models/transaction_model.dart'; // Para cálculo de valor gasto
+import '../../../../data/models/budget_model.dart';
+import '../../../../data/models/transaction_model.dart'; // Para cálculo de valor gasto
 
 class BudgetViewModel extends ChangeNotifier {
   late Box<BudgetModel> _budgetBox;

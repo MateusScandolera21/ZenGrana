@@ -1,7 +1,7 @@
 // lib/presentation/widgets/transaction_card.dart
 import 'package:flutter/material.dart';
-import '../../data/models/transaction_model.dart';
-import '../../data/models/category_model.dart';
+import '../../../../data/models/transaction_model.dart';
+import '../../../../data/models/category_model.dart';
 import 'package:intl/intl.dart';
 
 class TransactionCard extends StatelessWidget {
