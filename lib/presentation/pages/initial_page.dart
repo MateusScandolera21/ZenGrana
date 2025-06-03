@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import '../../data/models/transaction_model.dart';
-import '../../data/models/category_model.dart';
-import '../viewmodels/transaction_viewmodel.dart';
-import 'transaction_page.dart';
 import '../pages/goals_page.dart';
-import '../pages/budget_page.dart';
-import '../pages/category_register_page.dart';
 import '../pages/settings_page.dart';
 import '../pages/transaction_list_page.dart';
 import '../pages/category_list_page.dart';
+import '../pages/budget_list_page.dart';
 
 class InitialPage extends StatefulWidget {
   @override
@@ -32,7 +25,7 @@ class _InitialPageState extends State<InitialPage> {
             // --- HEADER PERSONALIZADO (RETO, SEM ONDAS) ---
             Container(
               height: 200,
-              color: Colors.blue.shade900,
+              color: Colors.green.shade900,
               width: double.infinity,
               child: const Padding(
                 padding: EdgeInsets.only(left: 24.0, bottom: 32.0),
@@ -46,7 +39,7 @@ class _InitialPageState extends State<InitialPage> {
                       child: Icon(
                         Icons.person_outline,
                         size: 40,
-                        color: Colors.blue,
+                        color: Colors.green,
                       ),
                     ),
                     SizedBox(height: 12),
@@ -117,7 +110,9 @@ class _InitialPageState extends State<InitialPage> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => BudgetPage()),
+                                MaterialPageRoute(
+                                  builder: (_) => BudgetListPage(),
+                                ),
                               );
                             },
                           ),

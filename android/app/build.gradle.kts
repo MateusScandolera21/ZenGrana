@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.controle_financeiro"
     compileSdk = flutter.compileSdkVersion
-    // ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -41,16 +41,4 @@ android {
 
 flutter {
     source = "../.."
-}
-
-dependencies {
-    // Certifique-se de que as dependências do Flutter estejam aqui, se houver
-    // Exemplo: testImplementation(kotlin("test-junit"))
-    // implementation(platform("androidx.compose:compose-bom:2023.08.00")) // Exemplo, se você usa Compose
-
-    // Suas dependências do Material Design e AppCompat (SINTAXE CORRETA PARA KTS)
-    implementation("androidx.appcompat:appcompat:1.6.1") // OU a versão mais recente
-    implementation("com.google.android.material:material:1.11.0") // OU a versão mais recente
-
-    // ... outras dependências que já existiam ...
 }

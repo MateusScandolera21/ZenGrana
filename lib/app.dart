@@ -1,61 +1,53 @@
 // lib/app.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'; // <--- Já está aqui!
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'presentation/pages/initial_page.dart';
 import 'presentation/viewmodels/transaction_viewmodel.dart';
-import 'presentation/viewmodels/category_viewmodel.dart'; // <-- NOVO IMPORT
-// import 'presentation/viewmodels/settings_viewmodel.dart'; // <-- Importe quando criar
+import 'presentation/viewmodels/category_viewmodel.dart';
+import 'presentation/viewmodels/budget_viewmodel.dart';
+import 'presentation/viewmodels/settings_viewmodel.dart'; // <--- NOVO IMPORT DO SETTINGS VIEWMODEL
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Para controlar o tema globalmente, você precisaria de um SettingsViewModel.
-    // Exemplo (descomente e adapte quando tiver o SettingsViewModel):
-    // final settingsViewModel = Provider.of<SettingsViewModel>(context);
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => TransactionViewModel()),
+        ChangeNotifierProvider(create: (_) => CategoryViewModel()),
+        ChangeNotifierProvider(create: (_) => BudgetViewModel()),
         ChangeNotifierProvider(
-          create: (_) => CategoryViewModel(),
-        ), // <-- NOVO PROVIDER
-        // ChangeNotifierProvider(create: (_) => SettingsViewModel()), // <-- Adicione quando criar o SettingsViewModel
-        // Adicione outros ViewModels que você criar aqui (BudgetViewModel, GoalsViewModel, etc.)
+          create: (_) => SettingsViewModel(),
+        ), // <--- NOVO PROVIDER DO SETTINGS
+        // ... outros ViewModels
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Zen Grana',
-        theme: ThemeData(
-          primarySwatch: Colors.green, // Seu tema principal
-          // ... outras configurações de tema claro (brightness: Brightness.light)
-        ),
-        darkTheme: ThemeData(
-          // Exemplo de tema escuro. Personalize as cores aqui.
-          brightness: Brightness.dark,
-          primarySwatch: Colors.green, // Pode ser outra cor para o tema escuro
-          // ... outras configurações do tema escuro
-        ),
-        // themeMode: settingsViewModel.currentThemeMode, // Usaria o valor do SettingsViewModel
-        themeMode:
-            ThemeMode
-                .system, // Por enquanto, usa o tema do sistema (ou você pode definir Light/Dark aqui)
-        // --- ADICIONE ESTAS DUAS PROPRIEDADES PARA SUPORTE À LOCALIZAÇÃO ---
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en', ''), // Inglês (para fallback ou se você quiser suportar)
-          Locale('pt', 'BR'), // Português do Brasil
-          // Adicione outros idiomas que seu app precisa suportar aqui, ex:
-          // Locale('es', ''), // Espanhol
-        ],
-
-        // --- FIM DAS PROPRIEDADES DE LOCALIZAÇÃO ---
-        home: InitialPage(),
+      child: Consumer<SettingsViewModel>(
+        // <--- Consumer para observar o SettingsViewModel
+        builder: (context, settingsViewModel, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Zen Grana',
+            theme: ThemeData(
+              primarySwatch: Colors.green,
+              brightness: Brightness.light, // Tema claro padrão
+            ),
+            darkTheme: ThemeData(
+              brightness: Brightness.dark, // Tema escuro padrão
+              primarySwatch: Colors.green,
+            ),
+            themeMode:
+                settingsViewModel
+                    .flutterThemeMode, // <--- AQUI A MÁGICA ACONTECE!
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en', ''), Locale('pt', 'BR')],
+            home: InitialPage(),
+          );
+        },
       ),
     );
   }

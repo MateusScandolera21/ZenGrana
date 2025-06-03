@@ -7,6 +7,7 @@ import 'data/models/transaction_model.dart'; // Contém TransactionModel e Trans
 import 'presentation/viewmodels/transaction_viewmodel.dart'; // Se você estiver usando Provider
 import 'data/models/budget_model.dart';
 import 'data/models/goals_model.dart';
+import 'data/models/app_theme_mode.dart';
 
 import 'app.dart';
 
@@ -22,6 +23,7 @@ void main() async {
   Hive.registerAdapter(CategoryModelAdapter());
   Hive.registerAdapter(BudgetModelAdapter());
   Hive.registerAdapter(GoalsModelAdapter());
+  Hive.registerAdapter(AppThemeModeAdapter());
   // --- FIM DO REGISTRO DOS ADAPTERS ---
 
   // Abrir as caixas do Hive

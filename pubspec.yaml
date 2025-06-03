@@ -22,14 +22,41 @@ dependencies:
   package_info_plus: ^8.3.0
   flutter_colorpicker: ^1.1.0
   uuid: ^4.5.1
-  
+  # flutter_native_splash: ^2.3.1 # <--- REMOVIDO DAQUI!
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
   build_runner: ^2.4.6
+  flutter_native_splash: ^2.3.1 # <--- MANTIDO APENAS AQUI
   hive_generator: ^2.0.1
   floor_generator: ^1.4.0
+
 flutter:
   uses-material-design: true
+
+  # Adicione a seção 'assets' se você ainda não tem, para incluir a pasta de imagens
+  assets:
+    - assets/ # <--- Certifique-se de que esta linha está aqui para incluir a pasta assets
+    # - assets/splash_logo.png # Opcional: listar imagens específicas se não for a pasta inteira
+    # - assets/dark_splash_logo.png # Opcional: listar imagens específicas
+
+# Configuração do Flutter Native Splash (FORA das seções de dependências)
+flutter_native_splash:
+  # A cor de fundo padrão para o tema claro (hexadecimal)
+  color: "#FFFFFF"
+  # O caminho para a imagem da splash screen para o tema claro
+  image: assets/splash_logo.png # <--- Certifique-se que esta imagem existe em sua pasta assets/
+
+  # Configurações para o modo escuro (opcional, mas recomendado para consistência)
+  image_dark: assets/dark_splash_logo.png # <--- Imagem diferente para o modo escuro (crie esta imagem)
+  color_dark: "#121212" # Cor de fundo para o modo escuro (quase preto)
+
+  # Outras configurações úteis (opcional)
+  android_gravity: center # Posição da imagem no Android (center, fill, top, bottom, etc.)
+  ios_content_mode: center # Posição da imagem no iOS
+  fullscreen: true # A splash screen ocupa a tela inteira (sem barra de status)
+  android: true # Gerar para Android
+  ios: true # Gerar para iOS
+  web: false # Não gerar para Web (pode ser true se quiser)

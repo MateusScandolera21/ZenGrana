@@ -8,7 +8,7 @@ part of 'budget_model.dart';
 
 class BudgetModelAdapter extends TypeAdapter<BudgetModel> {
   @override
-  final int typeId = 2;
+  final int typeId = 5;
 
   @override
   BudgetModel read(BinaryReader reader) {
@@ -17,17 +17,19 @@ class BudgetModelAdapter extends TypeAdapter<BudgetModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return BudgetModel(
-      id: fields[0] as int,
+      id: fields[0] as String,
       name: fields[1] as String,
       amount: fields[2] as double,
-      category: fields[3] as CategoryModel?,
+      categoryId: fields[3] as String,
+      startDate: fields[4] as DateTime,
+      endDate: fields[5] as DateTime,
     );
   }
 
   @override
   void write(BinaryWriter writer, BudgetModel obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -35,7 +37,11 @@ class BudgetModelAdapter extends TypeAdapter<BudgetModel> {
       ..writeByte(2)
       ..write(obj.amount)
       ..writeByte(3)
-      ..write(obj.category);
+      ..write(obj.categoryId)
+      ..writeByte(4)
+      ..write(obj.startDate)
+      ..writeByte(5)
+      ..write(obj.endDate);
   }
 
   @override
