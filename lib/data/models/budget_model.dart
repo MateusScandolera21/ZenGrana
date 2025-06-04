@@ -28,23 +28,4 @@ class BudgetModel extends HiveObject {
     required this.startDate,
     required this.endDate,
   });
-
-  // Método copyWith para facilitar a atualização de orçamentos existentes
-  BudgetModel copyWith({
-    String? id,
-    String? name,
-    double? amount,
-    String? categoryId,
-    DateTime? startDate,
-    DateTime? endDate,
-  }) {
-    return BudgetModel(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      amount: amount ?? this.amount,
-      categoryId: categoryId ?? this.categoryId,
-      startDate: startDate ?? this.startDate,
-      endDate: endDate ?? this.endDate,
-    );
-  }
 }

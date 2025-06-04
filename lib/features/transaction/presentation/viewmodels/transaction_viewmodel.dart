@@ -1,81 +1,115 @@
-// lib/presentation/viewmodels/transaction_viewmodel.dart
+// lib/features/transaction/presentation/viewmodels/transaction_viewmodel.dart
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../data/models/transaction_model.dart';
-import '../../../../data/models/category_model.dart'; // Mantenha, pois pode ser útil para exibição ou lógica
-import '../../../../data/models/budget_model.dart'; // <--- NOVO IMPORT para o método de cálculo de orçamento
+import '../../../../data/models/category_model.dart';
+import '../../../../data/models/budget_model.dart';
+import '../../../../core/services/recent_activity_service.dart'; // NOVO: Importe o serviço de atividades recentes
+import 'package:collection/collection.dart'; // Para firstWhereOrNull, se não tiver
 
 class TransactionViewModel extends ChangeNotifier {
-  List<TransactionModel> _allTransactions =
-      []; // Todas as transações carregadas
-  List<TransactionModel> _filteredTransactions =
-      []; // Transações após a aplicação de filtros
+  late Box<TransactionModel> _transactionBox; // Declarada como late
+  List<TransactionModel> _allTransactions = [];
+  List<TransactionModel> _filteredTransactions = [];
 
-  // Construtor: carrega as transações ao inicializar o ViewModel
+  final RecentActivityService _activityService =
+      RecentActivityService(); // Instância do serviço
+
+  // Future para controlar a inicialização da Box
+  Future<void>? _initFuture;
+
   TransactionViewModel() {
-    _loadTransactions();
+    print('DEBUG: TransactionViewModel - Construtor chamado.');
+    _initFuture = _init(); // Inicia a inicialização e armazena o Future
   }
 
-  // Getter para as transações filtradas que a UI irá observar
   List<TransactionModel> get filteredTransactions => _filteredTransactions;
-
-  // Getter para todas as transações (útil para cálculos totais ou outros ViewModels)
   List<TransactionModel> get allTransactions => _allTransactions;
 
-  // Carrega transações do Hive
-  Future<void> _loadTransactions() async {
+  Future<void> _init() async {
+    print('DEBUG: TransactionViewModel - _init() iniciado.');
     try {
-      final box = await Hive.openBox<TransactionModel>('transactions');
-      _allTransactions = box.values.toList();
-      _filteredTransactions = List.from(
-        _allTransactions,
-      ); // Inicialmente, todas as transações são filtradas
-      print('DEBUG: Transações carregadas: ${_allTransactions.length}');
+      _transactionBox = await Hive.openBox<TransactionModel>('transactions');
+      print('DEBUG: TransactionViewModel - Box "transactions" aberta.');
+
+      // Adicionar o listener AQUI, depois que a box for inicializada
+      _transactionBox.listenable().addListener(_loadTransactions);
+
+      _loadTransactions(); // Carrega as transações inicialmente
+      print(
+        'DEBUG: TransactionViewModel - Transações carregadas inicialmente.',
+      );
     } catch (e) {
-      print('ERRO: Falha ao carregar transações do Hive: $e');
+      print('ERRO: TransactionViewModel - Falha no _init(): $e');
     }
-    notifyListeners(); // Notifica a UI sobre a mudança
   }
 
-  // Adiciona uma nova transação
+  void _loadTransactions() {
+    _allTransactions = _transactionBox.values.toList();
+    _filteredTransactions = List.from(
+      _allTransactions,
+    ); // Re-aplica filtros se houver
+    print(
+      'DEBUG: _loadTransactions chamado. Transações: ${_allTransactions.length}',
+    );
+    notifyListeners();
+  }
+
   Future<void> addTransaction(TransactionModel transaction) async {
-    final box = await Hive.openBox<TransactionModel>('transactions');
-    await box.put(transaction.id, transaction); // Usa ID String como chave
+    await _initFuture; // Garante que a box esteja pronta
+    await _transactionBox.put(transaction.id, transaction);
     print(
       'DEBUG: Transação adicionada (ID: ${transaction.id}): ${transaction.description}',
     );
-    await _loadTransactions(); // Recarrega para atualizar as listas
+    // Registra a atividade
+    _activityService.addActivity(
+      type: 'Transação',
+      description:
+          'Nova ${transaction.type == TransactionType.income ? 'entrada' : 'saída'}: ${transaction.description} de R\$${transaction.amount.toStringAsFixed(2)}',
+    );
+    // _loadTransactions será chamado pelo listener da box
   }
 
-  // Atualiza uma transação existente
   Future<void> updateTransaction(TransactionModel transaction) async {
-    final box = await Hive.openBox<TransactionModel>('transactions');
-    await box.put(transaction.id, transaction); // Atualiza pela chave
+    await _initFuture; // Garante que a box esteja pronta
+    await _transactionBox.put(transaction.id, transaction);
     print(
       'DEBUG: Transação atualizada (ID: ${transaction.id}): ${transaction.description}',
     );
-    await _loadTransactions(); // Recarrega para atualizar as listas
+    // Registra a atividade
+    _activityService.addActivity(
+      type: 'Transação',
+      description:
+          'Transação atualizada: ${transaction.description} de R\$${transaction.amount.toStringAsFixed(2)}',
+    );
+    // _loadTransactions será chamado pelo listener da box
   }
 
-  // Deleta uma transação pelo ID (agora String)
   Future<void> deleteTransaction(String id) async {
-    final box = await Hive.openBox<TransactionModel>('transactions');
-    await box.delete(id); // Deleta diretamente pela chave
+    await _initFuture; // Garante que a box esteja pronta
+    final transactionToDelete = _transactionBox.get(
+      id,
+    ); // Pega a transação antes de deletar
+    await _transactionBox.delete(id);
     print('DEBUG: Transação deletada (ID: $id)');
-    await _loadTransactions(); // Recarrega para atualizar as listas
+    if (transactionToDelete != null) {
+      _activityService.addActivity(
+        type: 'Transação',
+        description: 'Transação excluída: ${transactionToDelete.description}',
+      );
+    }
+    // _loadTransactions será chamado pelo listener da box
   }
 
-  // Método unificado para aplicar todos os filtros
   void applyFilters({
     DateTime? startDate,
     DateTime? endDate,
-    String? categoryId, // <--- MUDOU PARA STRING
-    TransactionType?
-    type, // Adicionei a opção de filtrar por tipo (receita/despesa)
+    String? categoryId,
+    TransactionType? type,
   }) {
     List<TransactionModel> currentFiltered = List.from(_allTransactions);
 
-    // Filtro por data
     if (startDate != null || endDate != null) {
       currentFiltered =
           currentFiltered.where((transaction) {
@@ -105,16 +139,13 @@ class TransactionViewModel extends ChangeNotifier {
           }).toList();
     }
 
-    // Filtro por categoria (agora String)
     if (categoryId != null && categoryId.isNotEmpty) {
-      // Verifica se não é nulo e não é vazio (para "todas as categorias")
       currentFiltered =
           currentFiltered.where((transaction) {
             return transaction.categoryId == categoryId;
           }).toList();
     }
 
-    // Filtro por tipo de transação (receita/despesa)
     if (type != null) {
       currentFiltered =
           currentFiltered.where((transaction) {
@@ -129,17 +160,20 @@ class TransactionViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Métodos de filtro individuais (opcional, pode ser substituído por applyFilters)
+  // Métodos de filtro individuais agora chamam o método unificado
   void applyDateFilter(DateTime? startDate, DateTime? endDate) {
     applyFilters(startDate: startDate, endDate: endDate);
   }
 
   void applyCategoryFilter(String? categoryId) {
-    // MUDOU PARA STRING
     applyFilters(categoryId: categoryId);
   }
 
-  // Calcula o balanço total das transações filtradas
+  // Você pode adicionar um método para aplicar filtro por tipo se quiser um controle mais granular na UI
+  void applyTypeFilter(TransactionType? type) {
+    applyFilters(type: type);
+  }
+
   double getTotalBalance() {
     return _filteredTransactions.fold(0.0, (sum, transaction) {
       if (transaction.type == TransactionType.income) {
@@ -150,44 +184,46 @@ class TransactionViewModel extends ChangeNotifier {
     });
   }
 
-  /// Calcula o valor gasto para um orçamento específico.
-  /// Recebe o `budget` e a lista de `allCategories` (se precisar de informações da categoria).
   double calculateSpentAmountForBudget(
     BudgetModel budget,
     List<CategoryModel> allCategories,
   ) {
     double spent = 0.0;
-    // Opcional: Se precisar acessar propriedades da CategoryModel associada ao orçamento,
-    // você poderia encontrar a categoria aqui:
-    // final budgetCategory = allCategories.firstWhereOrNull((cat) => cat.id == budget.categoryId);
-
-    // Filtra todas as transações (não apenas as filtradas) para o cálculo do orçamento
     for (var transaction in _allTransactions) {
-      // Condições para incluir a transação no cálculo do gasto do orçamento:
-      // 1. É uma despesa.
-      // 2. Pertence à categoria do orçamento OU o orçamento é "geral" (categoryId vazio).
-      // 3. A transação está dentro do período de início e fim do orçamento.
+      // Usa _allTransactions para o cálculo completo
+      final bool isCategoryMatch =
+          budget.categoryId.isEmpty ||
+          transaction.categoryId == budget.categoryId;
+
       if (transaction.type == TransactionType.expense &&
-          (budget.categoryId.isEmpty ||
-              transaction.categoryId == budget.categoryId) &&
+          isCategoryMatch &&
           !transaction.date.isBefore(
             DateTime(
               budget.startDate.year,
               budget.startDate.month,
               budget.startDate.day,
             ),
-          ) && // Considera o dia de início
+          ) &&
           !transaction.date.isAfter(
             DateTime(
               budget.endDate.year,
               budget.endDate.month,
               budget.endDate.day,
             ).add(const Duration(days: 1)).subtract(const Duration(seconds: 1)),
-          )) // Considera o dia de fim (até o final do dia)
-      {
+          )) {
         spent += transaction.amount;
       }
     }
     return spent;
+  }
+
+  @override
+  void dispose() {
+    print('DEBUG: TransactionViewModel - dispose() chamado.');
+    // Só remova o listener se _transactionBox foi realmente inicializada
+    if (_transactionBox.isOpen) {
+      _transactionBox.listenable().removeListener(_loadTransactions);
+    }
+    super.dispose();
   }
 }

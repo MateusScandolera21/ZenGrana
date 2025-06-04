@@ -1,73 +1,58 @@
-// lib/src/modules/data/models/goals_model.dart
+// lib/data/models/goals_model.dart
+
 import 'package:hive/hive.dart';
 
-part 'goals_model.g.dart'; // Importante para o Hive Generator
+part 'goals_model.g.dart'; // Certifique-se de ter rodado 'flutter pub run build_runner build'
 
-@HiveType(typeId: 3) // Escolha um typeId que ainda não esteja em uso
+@HiveType(typeId: 3) // Use um typeId único para GoalsModel
 class GoalsModel extends HiveObject {
+  // Se você quer usar .save() e .delete() diretamente
   @HiveField(0)
-  int id;
+  late String id; // <--- MUDANÇA AQUI: DE int PARA String
 
   @HiveField(1)
-  String name;
+  late String name;
 
   @HiveField(2)
-  double targetAmount; // Renomeado de 'amount' para 'targetAmount'
+  late double targetAmount;
 
   @HiveField(3)
-  double currentAmount; // Novo campo para o progresso atual
+  late double currentAmount;
 
   @HiveField(4)
-  DateTime dueDate; // Novo campo para a data de vencimento
+  late DateTime dueDate;
 
   @HiveField(5)
-  bool isCompleted; // Novo campo para o status de conclusão
+  late bool isCompleted;
 
   @HiveField(6)
-  DateTime? completionDate; // Novo campo para a data de conclusão (opcional)
+  late DateTime? completionDate;
 
   GoalsModel({
     required this.id,
     required this.name,
     required this.targetAmount,
-    this.currentAmount = 0.0, // Valor padrão para uma nova meta
+    required this.currentAmount,
     required this.dueDate,
-    this.isCompleted = false, // Valor padrão
+    this.isCompleted = false,
     this.completionDate,
   });
 
-  // Método para converter para Map (útil para retornar para GoalsListPage)
-  Map<String, dynamic> toMap() {
-    return {
-      'id':
-          id.toString(), // Convertendo para String para manter consistência com o Map da GoalsListPage
-      'name': name,
-      'targetAmount': targetAmount,
-      'currentAmount': currentAmount,
-      'dueDate': dueDate,
-      'isCompleted': isCompleted,
-      'completionDate': completionDate,
-    };
-  }
-
-  // Método estático para criar GoalsModel a partir de um Map (útil para edição)
-  static GoalsModel fromMap(Map<String, dynamic> map) {
-    return GoalsModel(
-      id:
-          int.tryParse(map['id'] ?? '') ??
-          DateTime.now().millisecondsSinceEpoch, // Garante que o ID seja int
-      name: map['name'],
-      targetAmount: map['targetAmount'],
-      currentAmount: map['currentAmount'] ?? 0.0,
-      dueDate:
-          map['dueDate'] is String
-              ? DateTime.parse(map['dueDate'])
-              : map['dueDate'],
-      isCompleted: map['isCompleted'] ?? false,
-      completionDate:
-          map['completionDate'] is String
-              ? DateTime.parse(map['completionDate'])
-              : map['completionDate'],
-    );
-  }
+  // Remova o construtor .fromMap se você não precisar mais dele,
+  // já que agora você vai trabalhar com GoalsModel diretamente.
+  // Se ainda precisar dele por algum motivo, ajuste-o para aceitar Map<String, dynamic>
+  // e fazer a conversão de tipos corretamente.
+  // factory GoalsModel.fromMap(Map<String, dynamic> map) {
+  //   return GoalsModel(
+  //     id: map['id'] as String, // Ajuste para String
+  //     name: map['name'] as String,
+  //     targetAmount: map['targetAmount'] as double,
+  //     currentAmount: map['currentAmount'] as double,
+  //     dueDate: DateTime.parse(map['dueDate'] as String),
+  //     isCompleted: map['isCompleted'] as bool,
+  //     completionDate: map['completionDate'] != null
+  //         ? DateTime.parse(map['completionDate'] as String)
+  //         : null,
+  //   );
+  // }
 }

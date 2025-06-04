@@ -1,20 +1,16 @@
 // lib/presentation/pages/budget_page.dart
+
 import 'package:flutter/material.dart';
-// import 'package:hive/hive.dart'; // Remova este import, pois o ViewModel lidará com o Hive
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart'; // Para gerar IDs únicos
 import '../../../../data/models/budget_model.dart';
 import '../../../../data/models/category_model.dart';
-// import '../viewmodels/transaction_viewmodel.dart'; // Este import não é necessário aqui
 import '../../../category/presentation/viewmodels/category_viewmodel.dart';
-import '../viewmodels/budget_viewmodel.dart'; // <--- Nova Importação: BudgetViewModel
-
-// import '../../utils/list_extensions.dart'; // <--- Mantenha se você realmente tem esse arquivo e usa firstWhereOrNull
+import '../viewmodels/budget_viewmodel.dart';
 
 class BudgetPage extends StatefulWidget {
   final BudgetModel? budget; // Adicionado para permitir edição de orçamentos
 
-  // Construtor atualizado para permitir a edição
   const BudgetPage({Key? key, this.budget}) : super(key: key);
 
   @override
@@ -28,10 +24,9 @@ class _BudgetPageState extends State<BudgetPage> {
   late TextEditingController _nameController;
   late TextEditingController _amountController;
   CategoryModel? _selectedCategory; // Pode ser nulo se o orçamento for "geral"
-  DateTime _startDate = DateTime.now(); // Data de início do orçamento
-  DateTime _endDate = DateTime.now().add(
-    const Duration(days: 30),
-  ); // Data de fim (ex: 30 dias depois)
+  late DateTime
+  _startDate; // Definido como late para inicialização no initState
+  late DateTime _endDate; // Definido como late para inicialização no initState
 
   List<CategoryModel> _availableCategories = [];
 
@@ -41,13 +36,19 @@ class _BudgetPageState extends State<BudgetPage> {
     _nameController = TextEditingController();
     _amountController = TextEditingController();
 
+    // Inicialização padrão para novas orçamentos
+    _startDate = DateTime.now();
+    _endDate = DateTime.now().add(const Duration(days: 30));
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCategories(); // Carrega as categorias
 
       // Preencher campos se estiver editando um orçamento existente
       if (widget.budget != null) {
         _nameController.text = widget.budget!.name;
-        _amountController.text = widget.budget!.amount.toString();
+        _amountController.text = widget.budget!.amount.toStringAsFixed(
+          2,
+        ); // Formata para 2 casas decimais
         _startDate = widget.budget!.startDate;
         _endDate = widget.budget!.endDate;
 
@@ -59,13 +60,12 @@ class _BudgetPageState extends State<BudgetPage> {
         _selectedCategory = categoryViewModel.getCategoryById(
           widget.budget!.categoryId,
         );
-        // Se a categoriaId for vazia ou não encontrada, _selectedCategory permanecerá nulo
+        // Se a categoryId for vazia ou não encontrada, _selectedCategory permanecerá nulo
         // (o que é o caso para orçamentos "gerais" ou se a categoria foi deletada)
       } else {
         // Para novos orçamentos, pré-seleciona a primeira categoria se houver
-        if (_availableCategories.isNotEmpty) {
-          _selectedCategory = _availableCategories.first;
-        }
+        // Isso só ocorre se _availableCategories já estiver carregado.
+        // É melhor fazer essa pré-seleção após _loadCategories garantir que a lista não esteja vazia.
       }
     });
   }
@@ -84,11 +84,11 @@ class _BudgetPageState extends State<BudgetPage> {
     );
     setState(() {
       _availableCategories = categoryViewModel.categories;
-      // Se não houver categoria selecionada e houver categorias disponíveis (e não estiver editando),
-      // você pode pré-selecionar a primeira.
-      if (_selectedCategory == null &&
-          _availableCategories.isNotEmpty &&
-          widget.budget == null) {
+      // Para novos orçamentos: se não há categoria selecionada e temos categorias disponíveis,
+      // e não estamos editando, pré-selecione a primeira.
+      if (widget.budget == null &&
+          _selectedCategory == null &&
+          _availableCategories.isNotEmpty) {
         _selectedCategory = _availableCategories.first;
       }
     });
@@ -99,10 +99,7 @@ class _BudgetPageState extends State<BudgetPage> {
     required bool isStartDate,
   }) async {
     final initialDate = isStartDate ? _startDate : _endDate;
-    final firstDate =
-        isStartDate
-            ? DateTime(2000)
-            : _startDate; // End date cannot be before start date
+    final firstDate = DateTime(2000); // Allow selection far back for start date
     final lastDate = DateTime(2101);
 
     final DateTime? picked = await showDatePicker(
@@ -117,13 +114,13 @@ class _BudgetPageState extends State<BudgetPage> {
       setState(() {
         if (isStartDate) {
           _startDate = picked;
-          // Se a data de início for depois da data de fim, ajuste a data de fim
+          // Ajuste a data de fim se a data de início se tornar posterior
           if (_startDate.isAfter(_endDate)) {
             _endDate = _startDate.add(const Duration(days: 30));
           }
         } else {
           _endDate = picked;
-          // Se a data de fim for antes da data de início, ajuste a data de início
+          // Ajuste a data de início se a data de fim se tornar anterior
           if (_endDate.isBefore(_startDate)) {
             _startDate = _endDate.subtract(const Duration(days: 30));
           }
@@ -134,31 +131,19 @@ class _BudgetPageState extends State<BudgetPage> {
 
   void _saveBudget() {
     if (_formKey.currentState!.validate()) {
-      // _formKey.currentState!.save(); // Não é mais necessário com TextEditingController
-
       final budgetViewModel = Provider.of<BudgetViewModel>(
         context,
         listen: false,
       );
 
-      // Gerar um novo ID se for um novo orçamento, ou usar o ID existente para edição
       final String budgetId = widget.budget?.id ?? _uuid.v4();
-
-      // DECISÃO IMPORTANTE: Como lidar com orçamentos "gerais" (sem categoria específica)?
-      // Opção 1: Definir categoryId como uma String vazia ou um ID especial (ex: 'general_budget_id')
-      // Opção 2: Exigir que uma categoria seja sempre selecionada para um orçamento
-      // Vamos usar String vazia para indicar "todas as categorias"
-      final String selectedCategoryId =
-          _selectedCategory?.id ?? ''; // String vazia para "geral"
+      final String selectedCategoryId = _selectedCategory?.id ?? '';
 
       final budget = BudgetModel(
         id: budgetId,
-        name: _nameController.text, // Usar _nameController.text
-        amount: double.parse(
-          _amountController.text.replaceAll(',', '.'),
-        ), // Usar _amountController.text
-        categoryId:
-            selectedCategoryId, // <--- CORRIGIDO: Passando categoryId (String)
+        name: _nameController.text,
+        amount: double.parse(_amountController.text.replaceAll(',', '.')),
+        categoryId: selectedCategoryId,
         startDate: _startDate,
         endDate: _endDate,
       );
@@ -169,7 +154,9 @@ class _BudgetPageState extends State<BudgetPage> {
           const SnackBar(content: Text('Orçamento salvo com sucesso!')),
         );
       } else {
-        budgetViewModel.updateBudget(budget);
+        budgetViewModel.updateBudget(
+          budget,
+        ); // O ViewModel atualizará o item existente
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Orçamento atualizado com sucesso!')),
         );
@@ -192,11 +179,10 @@ class _BudgetPageState extends State<BudgetPage> {
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
-            // Adicionado para evitar overflow com teclado
             child: Column(
               children: [
                 TextFormField(
-                  controller: _nameController, // Usar controller
+                  controller: _nameController,
                   decoration: const InputDecoration(
                     labelText: 'Descrição do Orçamento',
                     border: OutlineInputBorder(),
@@ -206,11 +192,10 @@ class _BudgetPageState extends State<BudgetPage> {
                           value == null || value.isEmpty
                               ? 'Informe a descrição'
                               : null,
-                  // onSaved não é mais necessário com TextEditingController
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: _amountController, // Usar controller
+                  controller: _amountController,
                   decoration: const InputDecoration(
                     labelText: 'Valor do Orçamento (R\$)',
                     border: OutlineInputBorder(),
@@ -230,14 +215,12 @@ class _BudgetPageState extends State<BudgetPage> {
                     }
                     return null;
                   },
-                  // onSaved não é mais necessário com TextEditingController
                 ),
                 const SizedBox(height: 16),
                 ListTile(
                   title: const Text('Data de Início'),
                   subtitle: Text(
-                    // Formate a data para exibição
-                    '${_startDate.day}/${_startDate.month}/${_startDate.year}',
+                    '${_startDate.day.toString().padLeft(2, '0')}/${_startDate.month.toString().padLeft(2, '0')}/${_startDate.year}',
                   ),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () => _selectDate(context, isStartDate: true),
@@ -245,8 +228,7 @@ class _BudgetPageState extends State<BudgetPage> {
                 ListTile(
                   title: const Text('Data de Fim'),
                   subtitle: Text(
-                    // Formate a data para exibição
-                    '${_endDate.day}/${_endDate.month}/${_endDate.year}',
+                    '${_endDate.day.toString().padLeft(2, '0')}/${_endDate.month.toString().padLeft(2, '0')}/${_endDate.year}',
                   ),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () => _selectDate(context, isStartDate: false),
@@ -259,7 +241,6 @@ class _BudgetPageState extends State<BudgetPage> {
                       textAlign: TextAlign.center,
                     )
                     : DropdownButtonFormField<CategoryModel?>(
-                      // Permite CategoryModel ser null
                       decoration: const InputDecoration(
                         labelText: 'Categoria (Opcional)',
                         border: OutlineInputBorder(),
@@ -267,12 +248,10 @@ class _BudgetPageState extends State<BudgetPage> {
                       value: _selectedCategory,
                       hint: const Text('Selecione uma categoria'),
                       items: [
-                        // Opção para "Todas as categorias" (valor nulo)
                         const DropdownMenuItem<CategoryModel?>(
                           value: null,
                           child: Text('Todas as categorias'),
                         ),
-                        // Mapeia suas categorias disponíveis para DropdownMenuItems
                         ..._availableCategories
                             .map(
                               (cat) => DropdownMenuItem<CategoryModel>(
@@ -300,7 +279,11 @@ class _BudgetPageState extends State<BudgetPage> {
                   child: ElevatedButton.icon(
                     onPressed: _saveBudget,
                     icon: const Icon(Icons.save),
-                    label: const Text('Salvar Orçamento'),
+                    label: Text(
+                      widget.budget == null
+                          ? 'Salvar Orçamento'
+                          : 'Atualizar Orçamento',
+                    ),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       textStyle: const TextStyle(fontSize: 18),

@@ -1,14 +1,15 @@
-// lib/presentation/pages/transaction_page.dart
+// lib/features/transaction/presentation/pages/transaction_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:hive_flutter/hive_flutter.dart'; // Usar hive_flutter para openBox
 import 'package:uuid/uuid.dart';
-import 'package:intl/intl.dart'; // Adicionar para formatação de data
+import 'package:intl/intl.dart';
 import '../../../../data/models/transaction_model.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import '../../../../data/models/category_model.dart';
 import '../../../category/presentation/pages/category_register_page.dart';
 import '../../../category/presentation/viewmodels/category_viewmodel.dart';
+// Importe o CustomScaffold (se você quiser usá-lo nesta página também)
+import '../../../../core/shared/widgets/custom_scaffold.dart';
 
 class RegisterPage extends StatefulWidget {
   final TransactionModel? transaction;
@@ -29,7 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
   CategoryModel? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
 
-  List<CategoryModel> _categories = []; // Lista de categorias disponíveis
+  List<CategoryModel> _categories = [];
 
   @override
   void initState() {
@@ -37,28 +38,24 @@ class _RegisterPageState extends State<RegisterPage> {
     _titleController = TextEditingController();
     _amountController = TextEditingController();
 
-    // Listener para o CategoryViewModel
-    // Usamos addPostFrameCallback para garantir que o context esteja pronto para o Provider.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final categoryViewModel = Provider.of<CategoryViewModel>(
         context,
         listen: false,
       );
 
-      // Adiciona um listener para atualizar as categorias sempre que o CategoryViewModel mudar
       categoryViewModel.addListener(_updateCategories);
-      _updateCategories(); // Carrega as categorias na inicialização
+      _updateCategories();
 
-      // Se estiver editando uma transação existente, preenche os campos
       final t = widget.transaction;
       if (t != null) {
         _titleController.text = t.description;
         _amountController.text = t.amount.toString();
         _selectedTransactionType = t.type;
         _selectedDate = t.date;
+        // Certifique-se de que getCategoryById retorna nullable e é tratado.
         _selectedCategory = categoryViewModel.getCategoryById(t.categoryId);
       } else {
-        // Se for nova transação e _categories já tiver dados, pré-seleciona a primeira
         if (_categories.isNotEmpty) {
           _selectedCategory = _categories.first;
         }
@@ -68,7 +65,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    // REMOVER O LISTENER PARA EVITAR VAZAMENTOS DE MEMÓRIA!
     Provider.of<CategoryViewModel>(
       context,
       listen: false,
@@ -78,7 +74,6 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  // Novo método para atualizar categorias e a seleção
   void _updateCategories() {
     final categoryViewModel = Provider.of<CategoryViewModel>(
       context,
@@ -86,14 +81,12 @@ class _RegisterPageState extends State<RegisterPage> {
     );
     setState(() {
       _categories = categoryViewModel.categories;
-      // Se _selectedCategory é nulo (para nova transação) e há categorias, selecione a primeira
+      // Lógica para pré-selecionar ou limpar a categoria
       if (_selectedCategory == null && _categories.isNotEmpty) {
         _selectedCategory = _categories.first;
-      }
-      // Se _selectedCategory não está mais na lista de categorias (e.g., foi deletada),
-      // defina como nulo ou selecione a primeira.
-      if (_selectedCategory != null &&
-          !_categories.contains(_selectedCategory)) {
+      } else if (_selectedCategory != null &&
+          !_categories.any((cat) => cat.id == _selectedCategory!.id)) {
+        // Se a categoria selecionada não existe mais, limpa ou seleciona a primeira.
         _selectedCategory = _categories.isNotEmpty ? _categories.first : null;
       }
     });
@@ -116,10 +109,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _saveTransaction() {
     if (_formKey.currentState!.validate()) {
-      // O save() é mais para campos que usam onSaved, com controllers não é estritamente necessário para pegar o valor,
-      // mas é bom manter para consistência com o Form.
-      // _formKey.currentState!.save();
-
       if (_selectedCategory == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Por favor, selecione uma categoria.')),
@@ -132,7 +121,6 @@ class _RegisterPageState extends State<RegisterPage> {
         listen: false,
       );
 
-      // Usar a Uuid para ID da transação
       final String transactionId = widget.transaction?.id ?? const Uuid().v4();
 
       final transaction = TransactionModel(
@@ -156,11 +144,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Isso é opcional, mas garante que o widget é reconstruído se as categorias mudarem
-    // (por exemplo, se uma nova categoria for adicionada em outra tela e você voltar aqui).
-    // final categoryViewModel = Provider.of<CategoryViewModel>(context);
-
+    // Você pode decidir se quer usar CustomScaffold aqui para consistência de UI.
+    // Se usar, o `Scaffold` envolvente deve ser removido.
     return Scaffold(
+      // Ou CustomScaffold, se preferir
       appBar: AppBar(
         title: Text(
           widget.transaction == null
@@ -198,10 +185,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     decimal: true,
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Informe o valor';
-                    if (double.tryParse(value.replaceAll(',', '.')) == null)
+                    }
+                    if (double.tryParse(value.replaceAll(',', '.')) == null) {
                       return 'Valor inválido';
+                    }
                     return null;
                   },
                 ),
@@ -209,16 +198,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 ListTile(
                   title: const Text('Data'),
                   subtitle: Text(
-                    DateFormat(
-                      'dd/MM/yyyy',
-                    ).format(_selectedDate), // Formata a data
+                    DateFormat('dd/MM/yyyy').format(_selectedDate),
                   ),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () => _selectDate(context),
                 ),
                 const SizedBox(height: 16),
-                // Seletor de Categoria
-                // Condicional para exibir mensagem se não houver categorias
                 _categories.isEmpty
                     ? Column(
                       children: [
@@ -237,10 +222,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     (context) => const CategoryRegisterPage(),
                               ),
                             );
-                            // Após voltar do cadastro de categoria, force a atualização das categorias
-                            // o listener em _updateCategories já deve fazer isso, mas um setState aqui
-                            // pode ajudar a garantir a reconstrução imediata.
-                            _updateCategories(); // Recarrega categorias
+                            _updateCategories();
                           },
                           icon: const Icon(Icons.add),
                           label: const Text('Cadastrar Categoria'),
@@ -273,7 +255,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           _selectedCategory = value;
                         });
                       },
-                      // O validator mantém a categoria obrigatória, mas agora você tem a opção de cadastrar
                       validator:
                           (value) =>
                               value == null ? 'Selecione uma categoria' : null,

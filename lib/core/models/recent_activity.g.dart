@@ -1,50 +1,41 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'goals_model.dart';
+part of 'recent_activity.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class GoalsModelAdapter extends TypeAdapter<GoalsModel> {
+class RecentActivityAdapter extends TypeAdapter<RecentActivity> {
   @override
-  final int typeId = 3;
+  final int typeId = 7;
 
   @override
-  GoalsModel read(BinaryReader reader) {
+  RecentActivity read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return GoalsModel(
+    return RecentActivity(
       id: fields[0] as String,
-      name: fields[1] as String,
-      targetAmount: fields[2] as double,
-      currentAmount: fields[3] as double,
-      dueDate: fields[4] as DateTime,
-      isCompleted: fields[5] as bool,
-      completionDate: fields[6] as DateTime?,
+      type: fields[1] as String,
+      description: fields[2] as String,
+      timestamp: fields[3] as DateTime,
     );
   }
 
   @override
-  void write(BinaryWriter writer, GoalsModel obj) {
+  void write(BinaryWriter writer, RecentActivity obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.name)
+      ..write(obj.type)
       ..writeByte(2)
-      ..write(obj.targetAmount)
+      ..write(obj.description)
       ..writeByte(3)
-      ..write(obj.currentAmount)
-      ..writeByte(4)
-      ..write(obj.dueDate)
-      ..writeByte(5)
-      ..write(obj.isCompleted)
-      ..writeByte(6)
-      ..write(obj.completionDate);
+      ..write(obj.timestamp);
   }
 
   @override
@@ -53,7 +44,7 @@ class GoalsModelAdapter extends TypeAdapter<GoalsModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is GoalsModelAdapter &&
+      other is RecentActivityAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
